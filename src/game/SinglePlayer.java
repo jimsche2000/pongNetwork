@@ -538,6 +538,7 @@ int i234 = 0;
 		if (spielGestartet) {
 			//System.out.println("METHOD2, SETZE IHN AUF: "+p+" timestamp: "+System.currentTimeMillis());
 			ball.setLocation(p);
+			//panel.setlocation
 		}
 	}
 //  der bot

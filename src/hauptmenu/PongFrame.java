@@ -33,8 +33,7 @@ public class PongFrame extends JFrame{
 
 	private static final long serialVersionUID = 1L;
 //	private int width = 1366, height = 768;// width: 1165
-	private int width = 1920, height = 1080;
-
+//	private int width = 1920, height = 1080;
 
 	private JPanel componentPanel, midButtonPanel;
 //	private JLabel title;
