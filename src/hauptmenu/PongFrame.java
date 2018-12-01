@@ -89,7 +89,7 @@ public class PongFrame extends JFrame{
         
 		flo = new FontLoader();
 		GLOBAL_FONT = flo.loadFont("PressStart2P");
-		
+		//hammer wichtig
 		Dimension fullScreenSize = Toolkit.getDefaultToolkit().getScreenSize();
 //		int gcd = gcd(fullScreenSize.width, fullScreenSize.height); //greatest common divisor // größter gemeinsamer teiler
 //		int har = fullScreenSize.width / gcd; // horizontal aspect ratio
