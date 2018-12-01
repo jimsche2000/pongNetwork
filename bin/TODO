@@ -1,0 +1,15 @@
+General TODO:
+
+-Multi-Monitor Support(Dialog with it the user should has the control about on which Monitor he wants to play)
+-SinglePlayer integrated in the Multiplayer-Version(Full-Version)
+-Code aufräumen
+-Buggs beseitigen(Buggs: )
+-Server-Client finden verbessern
+-Live-Game-Kommunikation auf UDP verschieben und verbessern
+-Kontrolle über Vollbild, Fenster, Randlos, Auflösung, und Framerate anbieten
+-Multi-Threading überarbeiten(Vor allem der Systemstart zieht durch laden einer Schriftart aus einer Datei eine Menge Zeit)
+-Pro tick bewegt sich der ball um eine pixel-anzahl. diese als double nehmen, und nicht alle 10 kollisione, sonder ngeringfügig bei jeder kollision erhöhen. die überschüpssigen kommazahlen ´je tick sammeln, und wenn ganze pixel gesammelt wurden, diesen mitaddieren
+
+
+-Eine config-Datei erstellen, und beim start ladem bzw importieren. Wenn keine vorhanden ist standard werte nehmen, und eine config erstellen.
+-Wenn Auflösungen o.ä. geändert werden, in die config speichern, fenster disposen, in neuem thread die jar wieder starten(holt sich direkt die neue config), und das alte programm per System.exit(0); beenden
