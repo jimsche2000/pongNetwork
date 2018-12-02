@@ -3,7 +3,7 @@ package game;
 import java.awt.Point;
 import java.io.Serializable;
 
-public class PongLocationData implements Serializable{
+public class PongLocationData implements Serializable {
 	/**
 	 * 
 	 */
@@ -11,21 +11,25 @@ public class PongLocationData implements Serializable{
 	Point sliderLeft, sliderRight, ball;
 	String score;
 
-	public PongLocationData(Point sliderLeft,Point sliderRight,Point ball) {
+	public PongLocationData(Point sliderLeft, Point sliderRight, Point ball) {
 		this.sliderLeft = sliderLeft;
 		this.sliderRight = sliderRight;
 		this.ball = ball;
 		this.score = "0 : 0";
 	}
+
 	public String getScore() {
 		return score;
 	}
+
 	public void setScore(String score) {
 		this.score = score;
 	}
+
 	public PongLocationData() {
-		
+
 	}
+
 	public Point getSliderLeft() {
 		return sliderLeft;
 	}

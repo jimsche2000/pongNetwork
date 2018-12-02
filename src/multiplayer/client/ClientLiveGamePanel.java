@@ -4,7 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import javax.swing.JPanel;
 
-import game.Spielfeld;
+import game.MultiPlayerMatchField;
 import hauptmenu.PongFrame;
 import main.PongMain;
 
@@ -18,7 +18,7 @@ public class ClientLiveGamePanel extends JPanel {
 
 	private static final long serialVersionUID = 1L;
 	private static JPanel contentPane = new JPanel();
-	private Spielfeld spielfeld;
+	private MultiPlayerMatchField spielfeld;
 
 
 	private PongFrame pongFrame;
@@ -30,7 +30,7 @@ public class ClientLiveGamePanel extends JPanel {
 		contentPane.setSize(pongFrame.getSize());
 		contentPane.setLayout(null);
 		
-		spielfeld = new Spielfeld(pongFrame);
+		spielfeld = new MultiPlayerMatchField(pongFrame);
 		spielfeld.configSF(spielfeld.SPECTATOR);
 		
 		contentPane.add(spielfeld);
@@ -46,11 +46,11 @@ public class ClientLiveGamePanel extends JPanel {
 			contentPane.remove(pongFrame.getClientChat());
 		}
 	}	
-	public Spielfeld getSpielfeld() {
+	public MultiPlayerMatchField getSpielfeld() {
 		return spielfeld;
 	}
 
-	public void setSpielfeld(Spielfeld spielfeld) {
+	public void setSpielfeld(MultiPlayerMatchField spielfeld) {
 		this.spielfeld = spielfeld;
 	}
 }

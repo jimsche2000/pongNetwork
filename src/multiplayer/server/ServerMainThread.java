@@ -28,28 +28,24 @@ import pongtoolkit.ObjectStringCoder;
 public class ServerMainThread implements Runnable {
 
 	ServerSocket server;
-//	static ArrayList<PrintWriter> listClientWriter;
-//	static ArrayList<Socket> listSockets;
 	private volatile ArrayList<ClientAttributes> listClients;
 	private volatile PongLocationData pLD;
 	private boolean shouldRun = false;
 	private String name = "Server", maxUser = "0/100";
-	private final String nameTakenQuestion = "IS_NAME_ALREADY_TAKEN?",
-			nameAlreadyTakenError = "NAME_ALREADY_TAKEN!", IP_ALREADY_IN_USE_ERROR = "IP_ALREADY_IN_USE_ERROR", NO_CHAT_MESSAGE = "rHBvyWvqbR0JVs6x6g24",
+	private final String nameTakenQuestion = "IS_NAME_ALREADY_TAKEN?", nameAlreadyTakenError = "NAME_ALREADY_TAKEN!",
+			IP_ALREADY_IN_USE_ERROR = "IP_ALREADY_IN_USE_ERROR", NO_CHAT_MESSAGE = "rHBvyWvqbR0JVs6x6g24",
 			GAME_START = "GAME_START", SPECTATOR_MODE = "SPECTATOR_MODE", PLAYER_LEFT_MODE = "PLAYER_LEFT_MODE",
 			GAME_STOP = "GAME_STOP", PLAYER_RIGHT_MODE = "PLAYER_RIGHT_MODE", IN_GAME_POSITIONS = "IN_GAME_POSITIONS";
 	private ArrayList<String> leavedPlayerNames = new ArrayList<String>();
-//	private static int indexID = 0;
 	private GameThread runnable0 = new GameThread();
 	private Thread gameThread = new Thread(runnable0);
 	private DiscoveryThread discoveryThreadInstance;
-
 
 	private Thread discoveryThread;
 	private ClientAttributes PLAYER_ONE;
 	private ClientAttributes PLAYER_TWO;
 	private PongFrame pongFrame;
-	
+
 	public synchronized boolean isShouldRun() {
 		return shouldRun;
 	}
@@ -73,7 +69,6 @@ public class ServerMainThread implements Runnable {
 			try {
 				Thread.sleep(10);
 			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
@@ -86,42 +81,37 @@ public class ServerMainThread implements Runnable {
 	public void setDiscoveryThread(Thread discoveryThread) {
 		this.discoveryThread = discoveryThread;
 	}
+
 	boolean firsttime = true;
+
 	public ServerMainThread(String name, Long long1, PongFrame pongFrame) {
 		this.pongFrame = pongFrame;
 		this.setName(name);
 		this.setMaxUser(Long.toString(long1));
 		this.shouldRun = true;
 		pLD = new PongLocationData();
-		pLD.setBall(new Point((1920-50)/2, (1080-50-50)/2));
-		pLD.setSliderLeft(new Point(10, (1030-200)/2));
-		pLD.setSliderRight(new Point(1920-40, (1030-50)/2));
-		
-		if(firsttime) {
+		pLD.setBall(new Point((1920 - 50) / 2, (1080 - 50 - 50) / 2));
+		pLD.setSliderLeft(new Point(10, (1030 - 200) / 2));
+		pLD.setSliderRight(new Point(1920 - 40, (1030 - 50) / 2));
+
+		if (firsttime) {
 			setDiscoveryThreadInstance(new DiscoveryThread());
 			discoveryThread = new Thread(getDiscoveryThreadInstance());
 			firsttime = false;
 		}
-//		schlagL.setBounds(10, (newSize.height-300)/2, 30, 300);
-//		schlagL.setBackground(Color.WHITE);
-//		
-//		schlagR.setBounds(newSize.width-40, (newSize.height-300)/2, 30, 300);
-//		schlagR.setBackground(Color.WHITE);
 	}
 
 	public void stop() {
 		shouldRun = false;
-//		pongFrame.getMultiPlayer().getCreateServerPanel().setServerIsRunning(false);
 		try {
 
 			pongFrame.getHostServer().server.close();
 			shouldRun = false;
-//			if(discoveryThreadInstance!=null)if(discoveryThreadInstance.getSocket()!=null)discoveryThreadInstance.getSocket().close();
-//			getDiscoveryThread().interrupt();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		pongFrame.getHostServer().appendTextToConsole("Server wurde gestoppt!", pongFrame.getHostServerConsole().LEVEL_ERROR);
+		pongFrame.getHostServer().appendTextToConsole("Server wurde gestoppt!",
+				pongFrame.getHostServerConsole().LEVEL_ERROR);
 	}
 
 	/*
@@ -135,18 +125,13 @@ public class ServerMainThread implements Runnable {
 	 * 
 	 */
 	public void configureGameForClients(ClientAttributes playerOne, ClientAttributes playerTwo) {
-		// ClientAttributes list:
-
 		String spectatorMessage = NO_CHAT_MESSAGE + GAME_START + SPECTATOR_MODE,
 				playerOneMessage = NO_CHAT_MESSAGE + GAME_START + PLAYER_LEFT_MODE,
 				playerTwoMessage = NO_CHAT_MESSAGE + GAME_START + PLAYER_RIGHT_MODE;
 
-//		System.out.println("CLIENTS: " + listClients.size() + " WRITER: " + listClientWriter.size() + " SOCKETS: "
-//				+ listSockets.size());
 		for (ClientAttributes cA : getListClients()) {
-//			int ID = listClients.indexOf(cA);
 			PrintWriter pW = cA.getWriter();
-			
+
 			if (cA.equals(playerOne)) { // Spieler Links
 				System.out.println("SEND \"" + playerOneMessage + "\" to " + cA.getName());
 				pW.println(playerOneMessage);
@@ -163,20 +148,19 @@ public class ServerMainThread implements Runnable {
 				pW.flush();
 			}
 		}
-		
 
-		if(!gameThread.isAlive()) {
+		if (!gameThread.isAlive()) {
 			gameThread.start();
-		}else {
+		} else {
 			runnable0.starten();
 		}
 	}
-	
+
 	public void stopGameForClients(String msg) {
-		
+
 		runnable0.reset();
-		String stopMSG = this.NO_CHAT_MESSAGE+this.GAME_STOP;
-		
+		String stopMSG = this.NO_CHAT_MESSAGE + this.GAME_STOP;
+
 		pongFrame.getHostServer().sendToAllClients(stopMSG);
 		pongFrame.getHostServer().sendToAllClients(msg);
 		pongFrame.getHostServerConsole().appendTextToConsole(msg, pongFrame.getHostServerConsole().LEVEL_INFO);
@@ -195,22 +179,8 @@ public class ServerMainThread implements Runnable {
 						continue;
 					}
 					PrintWriter writer = new PrintWriter(client.getOutputStream());
-//					if(listClientWriter.size()<=indexID) {
-//						listClientWriter.add(writer);
-//					}else {
-//						listClientWriter.set(indexID, writer);
-//					}
-
 					Thread clientThread = new Thread(new ClientHandler(client));
 					clientThread.start();
-					
-//					if(listSockets.size()<=indexID) {
-//						listSockets.add(client);
-//					}else {
-//						listSockets.set(indexID, client);
-//					}
-//					indexID++;
-					
 					ClientAttributes cA = new ClientAttributes(writer, client);
 					getListClients().add(cA);
 				}
@@ -226,9 +196,7 @@ public class ServerMainThread implements Runnable {
 			this.server = new ServerSocket(5555);
 			appendTextToConsole("Server wurde gestartet!", pongFrame.getHostServerConsole().LEVEL_INFO);
 
-//			listClientWriter = new ArrayList<PrintWriter>();
 			setListClients(new ArrayList<ClientAttributes>());
-//			listSockets = new ArrayList<Socket>();
 			return true;
 		} catch (IOException e) {
 			appendTextToConsole("Server konnte nicht gestartet werden! Läuft bereits ein Server an diesem PC?",
@@ -257,11 +225,8 @@ public class ServerMainThread implements Runnable {
 
 			@SuppressWarnings("rawtypes")
 			Iterator it = getListClients().iterator();
-
-//			System.out.println("sendToAll: \"" + message + "\"");
-
 			while (it.hasNext()) {
-				PrintWriter writer = ((ClientAttributes)it.next()).getWriter();
+				PrintWriter writer = ((ClientAttributes) it.next()).getWriter();
 
 				writer.println(message);
 				writer.flush();
@@ -286,15 +251,13 @@ public class ServerMainThread implements Runnable {
 	}
 
 	public void removeClientFromList(String ip, String name) {
-		// System.out.println("----------------------------------\nREMOVE CLIENT FROM
-		// LIST\n--------------------------------");
 		lala: for (int i = 0; i < getListClients().size(); i++) {
 
 			String ipAddr = getListClients().get(i).getIP();
 			String ClName = getListClients().get(i).getName();
 
 			if (ipAddr.equals(ip) && ClName.equals(name)) {
-				
+
 				getListClients().remove(getListClients().get(i));
 
 				break lala;
@@ -303,10 +266,8 @@ public class ServerMainThread implements Runnable {
 	}
 
 	public boolean nameAlreadyTaken(String name) {
-		// System.out.println("JOIN-Name: "+name);
 		if (getListClients().size() > 0) {
 			for (ClientAttributes client : getListClients()) {
-				// System.out.println("Client-Name: "+client.getName());
 				if (client.getName().equals(name)) {
 
 					return true;
@@ -318,18 +279,15 @@ public class ServerMainThread implements Runnable {
 	}
 
 	public boolean ipAlreadyTaken(String iP) {
-//		System.out.println("CLIENT_LIST: "+listClients);
 		if (getListClients().size() > 0) {
 			int count = 0;
 			for (ClientAttributes client : getListClients()) {
-				// System.out.println("Client-Name: "+client.getName());
-//				System.out.println("Client \""+client.getName()+"\" der iP-Adresse "+client.getIP()+"");
 				if (client.getIP().equals(iP)) {
-//					System.out.println("Die iP \""+iP+"\" ist bereits vergeben.");
 					count++;
 				}
 			}
-			if(count>=2)return true;
+			if (count >= 2)
+				return true;
 			return false;
 		}
 		return false;
@@ -358,7 +316,7 @@ public class ServerMainThread implements Runnable {
 	public synchronized void setListClients(ArrayList<ClientAttributes> listClients) {
 		this.listClients = listClients;
 	}
-	
+
 	public synchronized DiscoveryThread getDiscoveryThreadInstance() {
 		return discoveryThreadInstance;
 	}
@@ -391,7 +349,7 @@ public class ServerMainThread implements Runnable {
 					// if connection reset exception -> user leaved game
 					while ((nachricht = reader.readLine()) != null) {
 						System.out.println("-----------------------------\n<Message>\n-----------------------------");
-						System.out.println("(client-count: "+getListClients().size()+")");
+						System.out.println("(client-count: " + getListClients().size() + ")");
 						if (nachricht.contains(NO_CHAT_MESSAGE)) {
 
 							if (nachricht.contains("JOINING")) {// "JOINING".equals(nachricht.substring(0,
@@ -399,8 +357,8 @@ public class ServerMainThread implements Runnable {
 
 								IP = client.getInetAddress().getHostAddress();
 								name = nachricht.substring(nachricht.indexOf("JOINING", 0) + 7);
-								
-								if(!ipAlreadyTaken(IP)) {
+
+								if (!ipAlreadyTaken(IP)) {
 									if (!nameAlreadyTaken(name)) {
 										if (leavedPlayerNames.contains(name))
 											leavedPlayerNames.remove(name);
@@ -408,44 +366,41 @@ public class ServerMainThread implements Runnable {
 										 * Anhand der IP den Client-Namen im ClientAttributes Objekt hinzufügen setzen
 										 * 
 										 */
-										for(ClientAttributes client : getListClients()) {
-											if(client.getIP().equals(IP)) {
+										for (ClientAttributes client : getListClients()) {
+											if (client.getIP().equals(IP)) {
 												client.setName(name);
-//												System.out.println("CLIENT: "+client);
 											}
 										}
-										
-										
-//										listClients.add(new ClientAttributes(IP, name));
-										pongFrame.getHostServer().appendTextToConsole(name + " ist dem Server beigetreten",
+										pongFrame.getHostServer().appendTextToConsole(
+												name + " ist dem Server beigetreten",
 												pongFrame.getHostServerConsole().LEVEL_INFO);
-										sendToClient(client, pongFrame.getHostServer().NO_CHAT_MESSAGE + nameTakenQuestion);
-										pongFrame.getHostServer().sendToAllClients(name + " ist dem Server beigetreten");
+										sendToClient(client,
+												pongFrame.getHostServer().NO_CHAT_MESSAGE + nameTakenQuestion);
+										pongFrame.getHostServer()
+												.sendToAllClients(name + " ist dem Server beigetreten");
 									} else {
-										sendToClient(client, pongFrame.getHostServer().NO_CHAT_MESSAGE + nameTakenQuestion
-												+ nameAlreadyTakenError);
+										sendToClient(client, pongFrame.getHostServer().NO_CHAT_MESSAGE
+												+ nameTakenQuestion + nameAlreadyTakenError);
 
-										for(ClientAttributes client : getListClients()) {
-											if(client.getIP().equals(IP)) {
+										for (ClientAttributes client : getListClients()) {
+											if (client.getIP().equals(IP)) {
 												client.setName(name);
-												System.out.println("CLIENT: "+client);
+												System.out.println("CLIENT: " + client);
 											}
 										}
-										
+
 										removeClientFromList(IP, name);
 									}
-									
-									
-								}else { //IP wird bereits von einem Client benutzt.
-									
-									
+
+								} else { // IP wird bereits von einem Client benutzt.
+
 									sendToClient(client, pongFrame.getHostServer().NO_CHAT_MESSAGE + nameTakenQuestion
 											+ IP_ALREADY_IN_USE_ERROR);
 
-									for(ClientAttributes client : getListClients()) {
-										if(client.getIP().equals(IP)) {
+									for (ClientAttributes client : getListClients()) {
+										if (client.getIP().equals(IP)) {
 											client.setName(name);
-											System.out.println("CLIENT: "+client);
+											System.out.println("CLIENT: " + client);
 										}
 									}
 									removeClientFromList(IP, name);
@@ -464,26 +419,12 @@ public class ServerMainThread implements Runnable {
 										pongFrame.getHostServerConsole().LEVEL_INFO);
 								pongFrame.getHostServer().sendToAllClients(name + " hat den Server verlassen");
 
-							}else if(nachricht.contains(pongFrame.getHostServer().IN_GAME_POSITIONS)) {
-								
+							} else if (nachricht.contains(pongFrame.getHostServer().IN_GAME_POSITIONS)) {
+
 								System.out.println("[SERVER]IN_GAME_POSITIONS_BY_CLIENTS");
-								
+
 								safeInGameLocations(nachricht.substring(nachricht.indexOf("{")));
 							}
-							// else if (nachricht.contains("VORSCHLAG")) {
-							// String message = nachricht.substring(nachricht.indexOf("VORSCHLAG") + 10);
-							//
-							// pongFrame.getHostServer().appendTextToConsole(message, ServerConsole.LEVEL_INFO);
-							// } else if (nachricht.contains(PATTERN_REACHED)) {
-							// int startPos = nachricht.indexOf(PATTERN_REACHED) + PATTERN_REACHED.length();
-							//
-							// String message = nachricht.substring(startPos) + " hat diese Bingo-Runde
-							// gewonnen!";
-							// for (int i = 0; i < 10; i++) {
-							// appendTextToConsole(message, ServerConsole.LEVEL_INFO);
-							// pongFrame.getHostServer().sendToAllClients(message);
-							// }
-							// }
 						} else {
 							int pos = nachricht.indexOf(":");
 							String name2 = nachricht.substring(0, pos);
@@ -508,12 +449,13 @@ public class ServerMainThread implements Runnable {
 			} else if (client.isClosed()) {// Client geschlossen
 				try {
 
-					for(ClientAttributes cA : getListClients()) {
-						
-						if(cA.getClient().equals(client)) {
+					for (ClientAttributes cA : getListClients()) {
+
+						if (cA.getClient().equals(client)) {
 							String name = cA.getName();
 
-							pongFrame.getHostServer().appendTextToConsole(name + " hat den Server verlassen", pongFrame.getHostServerConsole().LEVEL_INFO);
+							pongFrame.getHostServer().appendTextToConsole(name + " hat den Server verlassen",
+									pongFrame.getHostServerConsole().LEVEL_INFO);
 							pongFrame.getHostServer().sendToAllClients(name + " hat den Server verlassen");
 						}
 					}
@@ -525,69 +467,34 @@ public class ServerMainThread implements Runnable {
 				}
 			}
 		}
-		
-		
+
 		private void safeInGameLocations(String locationData) {
-			//"{ORIENTATION="+orientation+"}{X="+p.x+"}{Y="+p.y+"}"
-			
-			System.out.println("[SERVER]SAFE_INGAME_LOCATIONS: \""+locationData+"\"");
-			
-			String orientation = locationData.substring(locationData.indexOf("=")+1, locationData.indexOf("}"));
-			locationData = locationData.substring(locationData.indexOf("}")+1);
-			
-			int x = Integer.valueOf(locationData.substring(locationData.indexOf("X=")+2, locationData.indexOf("}")));
-			int y = Integer.valueOf(locationData.substring(locationData.indexOf("Y=")+2, locationData.lastIndexOf("}")));
-			
+			System.out.println("[SERVER]SAFE_INGAME_LOCATIONS: \"" + locationData + "\"");
+
+			String orientation = locationData.substring(locationData.indexOf("=") + 1, locationData.indexOf("}"));
+			locationData = locationData.substring(locationData.indexOf("}") + 1);
+
+			int x = Integer.valueOf(locationData.substring(locationData.indexOf("X=") + 2, locationData.indexOf("}")));
+			int y = Integer
+					.valueOf(locationData.substring(locationData.indexOf("Y=") + 2, locationData.lastIndexOf("}")));
+
 			Point p = new Point(x, y);
-			System.out.println("[SERVER]ORIENTATION="+orientation+" X="+x+" Y="+y);
-			if(orientation.equals("RIGHT")) {
-				
+			System.out.println("[SERVER]ORIENTATION=" + orientation + " X=" + x + " Y=" + y);
+			if (orientation.equals("RIGHT")) {
+
 				pLD.setSliderRight(p);
-				
-			}else if(orientation.equals("LEFT")) {
-				
+
+			} else if (orientation.equals("LEFT")) {
+
 				pLD.setSliderLeft(p);
 			}
 		}
 	}
-//	public class GameCommunicationThread implements Runnable{
-//		private DatagramSocket socket;
-//		int port = 5555;
-//		@Override
-//		public void run() {
-//			// TODO Auto-generated method stub
-//			try {
-//				socket = new DatagramSocket(8888, InetAddress.getByName("0.0.0.0"));
-//			} catch (SocketException | UnknownHostException e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//			}
-//			
-//		} //UDP PORT 7777
-//		
-//		private void sendMessage(String msg, InetAddress Ip) {
-//			byte[] sendData = null;
-//			try {
-//				sendData = msg.getBytes("UTF-8");
-//			} catch (UnsupportedEncodingException e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//			}
-//			DatagramPacket sendPacket = new DatagramPacket(sendData, msg.length(),
-//					Ip, port);
-//
-//			try {
-//				socket.send(sendPacket);
-//			} catch (IOException e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//			}
-//		}
-//		
-//	}
+
 	public class DiscoveryThread implements Runnable {
 		private DatagramSocket socket;
 		private boolean shouldDiscover = true;
+
 		public DatagramSocket getSocket() {
 			return socket;
 		}
@@ -595,21 +502,24 @@ public class ServerMainThread implements Runnable {
 		public void setSocket(DatagramSocket socket) {
 			this.socket = socket;
 		}
+
 		boolean firsttime = true;
+
 		@Override
 		public void run() {
 			try {
 				// Keep a socket open to listen to all the UDP trafic that is destined for this
 				// port
-				if(firsttime) {
+				if (firsttime) {
 					socket = new DatagramSocket(8888, InetAddress.getByName("0.0.0.0"));
-	
+
 					socket.setBroadcast(true);
 					firsttime = false;
-					
+
 				}
 				while (true) {
-					System.out.println("DISCOVERYTHREAD SOCKET CLOSED: "+socket.isClosed()+" shouldDiscover: "+shouldDiscover);
+					System.out.println("DISCOVERYTHREAD SOCKET CLOSED: " + socket.isClosed() + " shouldDiscover: "
+							+ shouldDiscover);
 					if (!socket.isClosed() && shouldDiscover) {
 						if (pongFrame.isShowServerNetworkInformation())
 							pongFrame.getHostServer().appendTextToConsole(
@@ -628,8 +538,9 @@ public class ServerMainThread implements Runnable {
 						}
 						// Packet received
 						if (pongFrame.isShowServerNetworkInformation())
-							pongFrame.getHostServer().appendTextToConsole(getClass().getName()
-									+ ">>>Discovery packet received from: " + packet.getAddress().getHostAddress(),
+							pongFrame.getHostServer().appendTextToConsole(
+									getClass().getName() + ">>>Discovery packet received from: "
+											+ packet.getAddress().getHostAddress(),
 									pongFrame.getHostServerConsole().LEVEL_INFO);
 
 						if (pongFrame.isShowServerNetworkInformation())
@@ -652,8 +563,10 @@ public class ServerMainThread implements Runnable {
 
 							socket.send(sendPacket);
 							if (pongFrame.isShowServerNetworkInformation())
-								pongFrame.getHostServer().appendTextToConsole(getClass().getName() + ">>>Sent packet to: "
-										+ sendPacket.getAddress().getHostAddress(), pongFrame.getHostServerConsole().LEVEL_INFO);
+								pongFrame.getHostServer().appendTextToConsole(
+										getClass().getName() + ">>>Sent packet to: "
+												+ sendPacket.getAddress().getHostAddress(),
+										pongFrame.getHostServerConsole().LEVEL_INFO);
 						}
 					}
 					try {
@@ -675,22 +588,13 @@ public class ServerMainThread implements Runnable {
 		}
 
 		public void setShouldDiscover(boolean shouldDiscover) {
-			System.out.println("\n\nShouldDiscover: "+shouldDiscover);
-			if(!discoveryThread.isAlive())discoveryThread.start();
+			System.out.println("\n\nShouldDiscover: " + shouldDiscover);
+			if (!discoveryThread.isAlive())
+				discoveryThread.start();
 			this.shouldDiscover = shouldDiscover;
 		}
-
-//		public static DiscoveryThread getInstance() {
-//
-//			return DiscoveryThreadHolder.INSTANCE;
-//		}
-//
-//		private static class DiscoveryThreadHolder {
-//
-//			private static final DiscoveryThread INSTANCE = new DiscoveryThread();
-//		}
 	}
-	
+
 	public class GameThread implements Runnable {
 
 		public boolean richtungx;
@@ -702,31 +606,25 @@ public class ServerMainThread implements Runnable {
 		public int score2 = 0;
 		private int MAX_POINTS = 15;
 		private int oft;
-		// private JLabel scoreLabel = new JLabel("0 : 0");
 		private String score = "0 : 0";
-		// private double speed = 1;
-//		private boolean up, down, up1, down1;
 		Timer timer = new Timer();
 		int periodendauer = 2; // Milisekunden
 		boolean gestartet = false;
 		Dimension ballSize = new Dimension(50, 50);
 		Dimension sliderSize = new Dimension(10, 200);
 		Dimension frameSize = new Dimension(1920, 1080);
-//		int speed = 2;
 		int wy = 2, wx = 2, px, py;
 		boolean winkel, kl, kr;
 		private int weitex, weitey, weitex1, weitey1, weitey2, weitey3;
 
-		/* TODO
-		 * Eigenes Datagram-Socket eröffnen, welches die aktuellen Locations
-		 * per UDP an die beiden Spieler und die Spectator schickt.
-		 * Zusätzlich noch eine Art UDP Listener um die Positionen der Spieler zu erhalten.
-		 * Das ganze natürlich auch anders herum für die Clients.....
+		/*
+		 * TODO Eigenes Datagram-Socket eröffnen, welches die aktuellen Locations per
+		 * UDP an die beiden Spieler und die Spectator schickt. Zusätzlich noch eine Art
+		 * UDP Listener um die Positionen der Spieler zu erhalten. Das ganze natürlich
+		 * auch anders herum für die Clients.....
 		 */
-		// double speadup = 1.0;
 		@Override
 		public void run() {
-			// PongLocationData pLD
 			Richtung.setRichtungX(false);
 			Richtung.setRichtungY(true);
 
@@ -740,44 +638,37 @@ public class ServerMainThread implements Runnable {
 			winkel = true;
 
 			starten();
-
-//			PongLocationData old = null;
 			// GAME-PHYSICS
 			while (true) {
 				// GAME
 				try {
 					if (gestartet) {
-						
-						
-						
+
 						boolean x1 = Richtung.isRichtungX();
 						boolean y1 = Richtung.isRichtungY();
 
 						Richtung.isxNichts();
 						Richtung.isyNichts();
-						
+
 						if (x1 == true) {
 							gehe(-weitex, 0);
-							// System.out.println("x true");
 						}
 
 						if (x1 == false) {
 							gehe(weitex, 0);
-							// System.out.println("x false");
 						}
 
 						if (y1 == true) {
 							gehe(0, weitey);
-							// System.out.println("y true");
 						}
 
 						if (y1 == false) {
 							gehe(0, -weitey);
-							// System.out.println("y false");
 						}
 						pongFrame.getHostServer()
-						.sendToAllClients(pongFrame.getHostServer().NO_CHAT_MESSAGE + pongFrame.getHostServer().IN_GAME_POSITIONS
-								+ "{PLD=" + ObjectStringCoder.objectToString(pLD) + "}");
+								.sendToAllClients(pongFrame.getHostServer().NO_CHAT_MESSAGE
+										+ pongFrame.getHostServer().IN_GAME_POSITIONS + "{PLD="
+										+ ObjectStringCoder.objectToString(pLD) + "}");
 					}
 				} catch (IOException e) {
 					e.printStackTrace();
@@ -788,13 +679,10 @@ public class ServerMainThread implements Runnable {
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
-				// AUSGABE
-//				System.out.println("[GAME-THREAD]SliderLeft: " + pLD.getSliderLeft() + " SliderRight: "
-//						+ pLD.getSliderRight() + " Ball: " + pLD.getBall() + " Punkte: " + pLD.getScore());
 			}
 		}
 
-		public  void reset() {
+		public void reset() {
 			oft = 0;
 			px = 0;
 			kl = false;
@@ -803,30 +691,32 @@ public class ServerMainThread implements Runnable {
 			weitey = 2;
 			score1 = 0;
 			score2 = 0;
-			
+
 			pLD = new PongLocationData();
-			pLD.setBall(new Point((1920-50)/2, (1080-50-50)/2));
-			pLD.setSliderLeft(new Point(10, (1030-200)/2));
-			pLD.setSliderRight(new Point(1920-40, (1030-50)/2));
-			
+			pLD.setBall(new Point((1920 - 50) / 2, (1080 - 50 - 50) / 2));
+			pLD.setSliderLeft(new Point(10, (1030 - 200) / 2));
+			pLD.setSliderRight(new Point(1920 - 40, (1030 - 50) / 2));
+
 			gestartet = false;
 		}
-		
+
 		public void stoppen() {
 			if (gestartet) {
 				gestartet = false;
-				if(score1 >=MAX_POINTS || score2 >=MAX_POINTS) {
+				if (score1 >= MAX_POINTS || score2 >= MAX_POINTS) {
 					String msg = "";
-					if(score1 > score2) {
-						msg = pongFrame.getHostServer().PLAYER_ONE.getName()+" hat mit "+score1+" zu "+score2+" gegen "+pongFrame.getHostServer().PLAYER_TWO.getName()+" gewonnen.";
-					}else if(score2 > score1) {
-						msg = pongFrame.getHostServer().PLAYER_TWO.getName()+" hat mit "+score2+" zu "+score1+" gegen "+pongFrame.getHostServer().PLAYER_ONE.getName()+" gewonnen.";
+					if (score1 > score2) {
+						msg = pongFrame.getHostServer().PLAYER_ONE.getName() + " hat mit " + score1 + " zu " + score2
+								+ " gegen " + pongFrame.getHostServer().PLAYER_TWO.getName() + " gewonnen.";
+					} else if (score2 > score1) {
+						msg = pongFrame.getHostServer().PLAYER_TWO.getName() + " hat mit " + score2 + " zu " + score1
+								+ " gegen " + pongFrame.getHostServer().PLAYER_ONE.getName() + " gewonnen.";
 					}
 					score1 = 0;
 					score2 = 0;
 					pongFrame.getHostServer().stopGameForClients(msg);
-					
-				}else {
+
+				} else {
 					pLD.getBall().setLocation((frameSize.width - ballSize.width) / 2,
 							(frameSize.height - ballSize.height) / 2);
 
@@ -858,23 +748,20 @@ public class ServerMainThread implements Runnable {
 
 		int ID = 0;
 		boolean tempCollision1 = false, tempCollision2 = false;
+
 		public void gehe(int x, int y) {
-			Point p = pLD.getBall(); //ballLocation:p
-//			Dimension d = ballSize; //ballgröße:d
+			Point p = pLD.getBall(); // ballLocation:p
 
 			p.x = p.x - x;
 			p.y = p.y + y;
-				
-			//Objekt Kollision
 
-//			Dimension ds = pongFrame.getGraphicResolution(); //TODO:
-			Dimension ds = new Dimension(1920,1080); //TODO:
+			// Objekt Kollision
+
+			Dimension ds = new Dimension(1920, 1080); // TODO:
 			int radius = ballSize.width / 2;
-		
-			
-			if (Collision.circleToRect(p.x + radius, p.y + radius, radius,
-					pLD.getSliderLeft().getLocation().x, pLD.getSliderLeft().getLocation().y, sliderSize.width,
-					sliderSize.height)) { 
+
+			if (Collision.circleToRect(p.x + radius, p.y + radius, radius, pLD.getSliderLeft().getLocation().x,
+					pLD.getSliderLeft().getLocation().y, sliderSize.width, sliderSize.height)) {
 
 				int ballY = pLD.getBall().getLocation().y - pLD.getSliderLeft().getLocation().y + sliderSize.height;
 
@@ -933,9 +820,8 @@ public class ServerMainThread implements Runnable {
 				}
 			}
 
-			if (Collision.circleToRect(p.x + radius, p.y + radius, radius,
-					pLD.getSliderRight().getLocation().x, pLD.getSliderRight().getLocation().y, sliderSize.width,
-					sliderSize.height)) {
+			if (Collision.circleToRect(p.x + radius, p.y + radius, radius, pLD.getSliderRight().getLocation().x,
+					pLD.getSliderRight().getLocation().y, sliderSize.width, sliderSize.height)) {
 
 				int ballY = pLD.getBall().getLocation().y - pLD.getSliderRight().getLocation().y + ballSize.height;
 
@@ -996,26 +882,22 @@ public class ServerMainThread implements Runnable {
 					}
 				}
 			}
-			
 
 			// Seiten Kollision
-	
+
 			if (p.x < 0 && !tempCollision1)
 
 			{
-				// speed = 1;
-				// speadup = 1.0;
 				score2++;
 				score = score1 + " : " + score2;
 				pLD.setScore(score);
 				tempCollision1 = true;
 				this.stoppen();
-			}else{
+			} else {
 				tempCollision1 = false;
 			}
-	
-			if(p.y<0)
-			{
+
+			if (p.y < 0) {
 				randtesty(true);
 			}
 
@@ -1025,25 +907,21 @@ public class ServerMainThread implements Runnable {
 				pLD.setScore(score);
 				tempCollision2 = true;
 				this.stoppen();
-			}else
-			{
+			} else {
 				tempCollision2 = false;
 			}
-	
-			if(ds.height<=p.y+ballSize.getSize().height)
-			{
+
+			if (ds.height <= p.y + ballSize.getSize().height) {
 				randtesty(false);
 			}
-	
-			if(gestartet && neu)
-			{
+
+			if (gestartet && neu) {
 				pLD.getBall().setLocation(400, 400);
 				neu = false;
 				pLD.getBall().setLocation(p);
 			}
-	
-			if(gestartet && neu)
-			{
+
+			if (gestartet && neu) {
 				pLD.setBall(p);
 			}
 		}
@@ -1052,22 +930,20 @@ public class ServerMainThread implements Runnable {
 			if (x == true) {
 				Richtung.setRichtungX(true);
 			}
-	
+
 			if (x == false) {
 				Richtung.setRichtungX(false);
 			}
 		}
-	
+
 		private void randtesty(boolean y) {
 			if (y == true) {
 				Richtung.setRichtungY(true);
 			}
-	
+
 			if (y == false) {
 				Richtung.setRichtungY(false);
 			}
 		}
 	}
 }
-
-

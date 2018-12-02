@@ -41,7 +41,7 @@ public class ServerConsole extends JPanel {
 	public final int LEVEL_ERROR = 1;
 	public final int LEVEL_NORMAL = 0;
 	private PongFrame pongFrame;
-	
+
 	public ServerConsole(PongFrame pongFrame) {
 		this.pongFrame = pongFrame;
 		this.setSize(800, 600);

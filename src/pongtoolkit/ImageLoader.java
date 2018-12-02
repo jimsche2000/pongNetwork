@@ -1,5 +1,7 @@
 package pongtoolkit;
 
+
+import java.awt.Dimension;
 import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -22,7 +24,18 @@ public class ImageLoader {
 		Image dimg = img.getScaledInstance(width, height, Image.SCALE_SMOOTH);
 		return new ImageIcon(dimg);
 	}
+	public static ImageIcon loadIcon(String name, Dimension size) {
 
+		BufferedImage img = null;
+		try {
+			img = ImageIO.read(ClassLoader.getSystemResource(folder + name));
+		} catch (IOException e) {
+			System.out.println("ERR: Image \"" + name + "\" couldn't load:\n");
+			e.printStackTrace();
+		}
+		Image dimg = img.getScaledInstance(size.width, size.height, Image.SCALE_SMOOTH);
+		return new ImageIcon(dimg);
+	}
 	public static ImageIcon loadIcon(String name) {
 
 		BufferedImage img = null;
@@ -45,6 +58,18 @@ public class ImageLoader {
 			e.printStackTrace();
 		}
 		Image dimg = img.getScaledInstance(width, height, Image.SCALE_SMOOTH);
+		return dimg;
+	}
+	public static Image loadImage(String name, Dimension size) {
+
+		BufferedImage img = null;
+		try {
+			img = ImageIO.read(ClassLoader.getSystemResource(folder + name));
+		} catch (IOException e) {
+			System.out.println("ERR: Image \"" + name + "\" couldn't load:\n");
+			e.printStackTrace();
+		}
+		Image dimg = img.getScaledInstance(size.width, size.height, Image.SCALE_SMOOTH);
 		return dimg;
 	}
 

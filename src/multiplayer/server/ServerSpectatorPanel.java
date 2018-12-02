@@ -10,7 +10,7 @@ import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JPanel;
 
-import game.Spielfeld;
+import game.MultiPlayerMatchField;
 import gui.ShadowLabel;
 import hauptmenu.PongFrame;
 import main.PongMain;
@@ -26,7 +26,7 @@ public class ServerSpectatorPanel extends JPanel {
 
 	private static final long serialVersionUID = 1L;
 	private JPanel contentPane = new JPanel();
-	private Spielfeld spielfeld;
+	private MultiPlayerMatchField spielfeld;
 	private PongFrame pongFrame;
 	
 	public ServerSpectatorPanel(PongFrame pongFrame) {
@@ -35,7 +35,7 @@ public class ServerSpectatorPanel extends JPanel {
 		contentPane.setLayout(new BorderLayout());
 		contentPane.setSize(pongFrame.getSize());
 		
-		spielfeld = new Spielfeld(pongFrame);
+		spielfeld = new MultiPlayerMatchField(pongFrame);
 		spielfeld.configSF(spielfeld.SPECTATOR);
 		contentPane.add(spielfeld, BorderLayout.CENTER);
 		

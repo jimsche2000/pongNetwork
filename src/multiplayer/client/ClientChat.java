@@ -42,7 +42,7 @@ public class ClientChat extends JPanel {
 	final public int LEVEL_ERROR = 1;
 	final public int LEVEL_NORMAL = 0;
 	private PongFrame pongFrame;
-	
+
 	public ClientChat(PongFrame pongFrame) {
 		this.pongFrame = pongFrame;
 		this.setSize(800, 600);

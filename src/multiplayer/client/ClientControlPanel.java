@@ -25,7 +25,6 @@ import hauptmenu.PongFrame;
 public class ClientControlPanel extends JPanel implements ActionListener {
 
 	private static final long serialVersionUID = 1L;
-//	private static JButton stopServer;
 	private JButton skipBack;
 	private JPanel contentPane;
 	private JTextField serverNameTextField;
@@ -33,11 +32,6 @@ public class ClientControlPanel extends JPanel implements ActionListener {
 	private ShadowLabel maxUserLabel, title, labelServerName, chatTitle;
 
 	// Components for Suggesting Bingo-Sentences
-//	private JPanel bingoSentencesPanel;
-//	private JTextField bingoSentenceTextField;
-//	private JButton sendBingoSentence;
-//	private ShadowLabel bingoSentenceTitle, SuggestionSendWarningLabel;
-//	private long lastSuggestionTimestamp = 0;
 	private PongFrame pongFrame;
 
 	public ClientControlPanel(PongFrame pongFrame) {
@@ -47,7 +41,8 @@ public class ClientControlPanel extends JPanel implements ActionListener {
 		contentPane.setOpaque(false);
 		contentPane.setBackground(Color.black);
 		this.setSize(pongFrame.getSize());
-		contentPane.setPreferredSize(new Dimension((int) (pongFrame.getWidth() * 0.5), (int) (pongFrame.getHeight() * 0.5)));
+		contentPane.setPreferredSize(
+				new Dimension((int) (pongFrame.getWidth() * 0.5), (int) (pongFrame.getHeight() * 0.5)));
 //		contentPane.setMaximumSize(new Dimension((int) (pongFrame.getWidth() * 0.5), (int) (pongFrame.getHeight() * 0.5)));
 		contentPane.setLayout(null);
 
@@ -100,36 +95,15 @@ public class ClientControlPanel extends JPanel implements ActionListener {
 		}
 	}
 
-//	public void reload() {
-//
-//		serverNameTextField.setText(pongFrame.getHostServer().getName());
-//		maxUserTextField.setText(pongFrame.getHostServer().getMaxUser());
-////		stopServer.setEnabled(CreateServerPanel.serverIsRunning);
-//	}
-
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		String actionCommand = e.getActionCommand();
 
 		if (actionCommand.equals(skipBack.getText())) {
 
-
 			pongFrame.showPane(pongFrame.MULTI_PLAYER);
 			pongFrame.getClientThread().disconnectFromServer(true);
 
-		} else if (actionCommand.equals("sendSentence")) {
-			// Satz-Vorschlag an den Server schicken
-			// System.out.println(lastSuggestionTimestamp-System.currentTimeMillis());
-//			if (lastSuggestionTimestamp == 0 || (lastSuggestionTimestamp - System.currentTimeMillis()) < -10000) {
-//				ClientMainThread.sendMessageToServer(ClientMainThread.NO_CHAT_MESSAGE + "VORSCHLAG:"
-//						+ ClientMainThread.name + " schlägt vor: \"" + bingoSentenceTextField.getText() + "\"");
-//				lastSuggestionTimestamp = System.currentTimeMillis();
-//				bingoSentenceTextField.setText("");
-//				SuggestionSendWarningLabel.setText("Vorschlag wurde abgeschickt.");
-//			} else {
-//				SuggestionSendWarningLabel.setText(
-//						"Warte noch " + (((lastSuggestionTimestamp - System.currentTimeMillis()) / 1000) + 10) + "s");
-//			}
 		}
 	}
 

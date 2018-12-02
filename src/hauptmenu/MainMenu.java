@@ -1,108 +1,95 @@
 package hauptmenu;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.GridLayout;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.SwingConstants;
-
 import gui.MenuButton;
-import gui.MenuLabel;
 //import gui.MenuPanel;
 import pongtoolkit.ImageLoader;
 
 public class MainMenu extends JPanel implements ActionListener{
 	
 	private static final long serialVersionUID = 3657118563693224777L;
-//	private MenuPanel buttonPanel, contentPane;
-	private JPanel buttonPanel, contentPane;
+	private JPanel buttonPanel;
 	private MenuButton singlePlayer, multiPlayer, credits, leaveGame;
-//	private MenuLabel title;
 	private JLabel title, backgroundLabel;
-	private ImageIcon background = ImageLoader.loadIcon("menu-background-forest.jpg");
+	private ImageIcon background;
 	private PongFrame pongFrame;
+	private GridBagConstraints c;
 	
 	public MainMenu(PongFrame pongFrame) {
 		this.pongFrame = pongFrame;
-		this.setAlignmentY(SwingConstants.CENTER);
-		this.setAlignmentX(SwingConstants.CENTER);
-//		this.setSize(new Dimension(500, 600));
-//		this.setMaximumSize(new Dimension(500, 600));
-//		this.setLayout(new BorderLayout());
-//		this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-		this.setLayout(null);
+		Dimension preferredSize = pongFrame.getGraphicResolution();
+		background = ImageLoader.loadIcon("menu-background-forest.jpg",preferredSize);
+		this.setLayout(new BorderLayout());
 		
 		backgroundLabel = new JLabel();
-		backgroundLabel.setSize(1920, 1080);
-//		backgroundLabel.setLocation(0, 0);
+		backgroundLabel.setPreferredSize(preferredSize);
 		backgroundLabel.setIcon(background);
-		backgroundLabel.setLayout(new FlowLayout());
-//		buttonPanel = new MenuPanel(pongFrame);
-//		buttonPanel.setLayout(new GridLayout(4, 1));
-//		buttonPanel.setAlignmentY(SwingConstants.CENTER);
-//		buttonPanel.setSize(800, 400);
-//		contentPane = new MenuPanel(pongFrame);
-//		contentPane.setAlignmentY(SwingConstants.CENTER);
-//		contentPane.setSize(pongFrame.getGraphicResolution());
+		backgroundLabel.setLayout(new GridBagLayout());
+		c = new GridBagConstraints();
+		
 		buttonPanel = new JPanel();
 		buttonPanel.setLayout(new GridLayout(4, 1));
-		buttonPanel.setAlignmentY(SwingConstants.CENTER);
-		buttonPanel.setSize(800, 400);
-		buttonPanel.setPreferredSize(new Dimension(800,400));
-		contentPane = new JPanel();
-		contentPane.setAlignmentY(SwingConstants.CENTER);
-		contentPane.setAlignmentX(SwingConstants.CENTER);
-//		contentPane.setSize(pongFrame.getGraphicResolution());
-		contentPane.setSize(1920,1080);
-		contentPane.setMaximumSize(new Dimension(1920, 1080));
-		contentPane.setPreferredSize(new Dimension(1920, 1080));
-		//		contentPane.setLayout(new GridLayout(2, 1));
-		
-//		buttonPanel.setMaximumSize(new Dimension(500, 600));
-//		buttonPanel.setPreferredSize(new Dimension(500, 600));
-//		singlePlayer.setMaximumSize(new Dimension(500, 150));
-//		singlePlayer.setSize(new Dimension(500, 150));
+
 		singlePlayer = new MenuButton(pongFrame, "Einzelspieler");
 		singlePlayer.addActionListener(this);
-//		singlePlayer.addMouseMotionListener(f);
+		singlePlayer.setSize(new Dimension(preferredSize.width/2, preferredSize.height/11));
+
 		multiPlayer = new MenuButton(pongFrame, "Mehrspieler");
 		multiPlayer.addActionListener(this);
-//		multiPlayer.addMouseMotionListener(f);
+		multiPlayer.setSize(new Dimension(preferredSize.width/2, preferredSize.height/11));
+		
 		credits = new MenuButton(pongFrame, "Credits");
-		credits.setFont(multiPlayer.getFont().deriveFont(60f));
 		credits.addActionListener(this);
-//		credits.addMouseMotionListener(f);
+		credits.setSize(new Dimension(preferredSize.width/2, preferredSize.height/11));
+		
 		leaveGame = new MenuButton(pongFrame, "Spiel beenden");
 		leaveGame.addActionListener(this);
-//		leaveGame.addMouseMotionListener(f);
-//		title = new MenuLabel(pongFrame,"<html>P  O  N  G    -    E  A  I  T  6<br/><br/><br/></html>");
-		title = new JLabel("<html><br/>P  O  N  G    -    E  A  I  T  6<br/><br/><br/></html>");
-		title.setSize(1920, 300);
+		leaveGame.setSize(new Dimension(preferredSize.width/2, preferredSize.height/11));
+		
+		title = new JLabel("<html>P  O  N  G    -    E  A  I  T  6</html>");
 		title.setForeground(Color.white);
-		title.setFont(pongFrame.getGLOBAL_FONT().deriveFont(0, 80));
-		title.setVerticalAlignment(SwingConstants.CENTER);
-		title.setHorizontalAlignment(SwingConstants.CENTER);
+		title.setFont(pongFrame.getGLOBAL_FONT().deriveFont(preferredSize.height/17.5f));
 		title.setOpaque(false);
 		
-		contentPane.add(title);
-//		buttonPanel.setPreferredSize(new Dimension(800, 400));
-//		buttonPanel.setMaximumSize(new Dimension(800, 400));
-		buttonPanel.setAlignmentY(SwingConstants.CENTER);
 		buttonPanel.add(singlePlayer);
 		buttonPanel.add(multiPlayer);
 		buttonPanel.add(credits);
 		buttonPanel.add(leaveGame);
 		buttonPanel.setOpaque(false);
-		contentPane.add(buttonPanel);
-		contentPane.setOpaque(false);
-		backgroundLabel.add(contentPane);
-		this.add(backgroundLabel);
+		
+			c.weightx = 0;
+			c.weighty = 0.3;
+			c.gridy = 0; //Reihe
+			c.gridx = 0;//Spalte
+			c.insets = new Insets(Math.round(getPreferredSize().height/1500), 0, 0, 0); //Genug Abstand zwischen oben und titel
+//			c.anchor = GridBagConstraints.PAGE_START;
+//			c.fill = GridBagConstraints.HORIZONTAL;
+		backgroundLabel.add(title, c);
+		
+			c.weightx = 0;
+			c.weighty = 1;
+			c.gridy = GridBagConstraints.RELATIVE; //Unter dem ersten Component
+			c.gridx = 0;
+			c.anchor = GridBagConstraints.CENTER;
+			c.insets = new Insets(0, 0, Math.round(getPreferredSize().height/10), 0); //Genug Abstand zwischen boden und button-panel
+			c.ipady = (int) Math.round(getPreferredSize().height/3.5);
+			c.ipadx = Math.round(getPreferredSize().width/3);
+	//		c.fill = GridBagConstraints.HORIZONTAL;
+		backgroundLabel.add(buttonPanel, c);
+		this.setBackground(Color.black);
+		this.add(backgroundLabel, BorderLayout.CENTER);
 //		System.out.println("this: "+this.getBounds()+" backg: "+backgroundLabel.getBounds()+" cont: "+contentPane.getBounds());
 		
 	}

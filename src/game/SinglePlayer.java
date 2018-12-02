@@ -3,7 +3,6 @@ package game;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.Image;
 import java.awt.KeyEventDispatcher;
 import java.awt.KeyboardFocusManager;
@@ -14,7 +13,6 @@ import java.awt.event.KeyListener;
 import java.awt.image.MemoryImageSource;
 import java.util.Timer;
 import java.util.TimerTask;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 
@@ -29,17 +27,15 @@ public class SinglePlayer extends JPanel implements KeyListener {
 	private PongFrame pongFrame;
 	private PauseAction pauseAction;
 	private JPanel contentPane;
-	private Ball ball = new Ball();
-	private Schlag sLinks = new Schlag(100, 540);
-	private Schlag sRechts = new Schlag(1920 - 100, 540);
+	private PhysicData physicData;
+	private Ball ball; // Panel, welches statt einem Quadrat ein gefülltes Oval Zeichnet
+	private Schlag sLinks; // JLabel
+	private Schlag sRechts; // JLabel
 	private MenuLabel winner;
 	private MenuLabel scoreLabel;
 	private MenuLabel countdown;
-//	private JLabel winner = new JLabel();
-//	private JLabel scoreLabel = new JLabel();
-//	private JLabel countdown = new JLabel();
 	private Timer timer = new Timer();
-	
+
 	// Variables (Normal Datatypes)
 	private boolean countdownActive = false;
 	private boolean firstThreadStart;
@@ -53,23 +49,19 @@ public class SinglePlayer extends JPanel implements KeyListener {
 
 	private int erfassungsbereichDummerBot; // Horizontaler Pixelfester-Wert, ab dem der Bot "zuguckt" und seine
 											// Position verändert
-	private int botSpeed; // Geschwindigkeit des Bots
+	private float botSpeed; // Geschwindigkeit des Bots
 
-	private int leftPlayerSpeed, rightPlayerSpeed;
-	//private int tempCountCollision; // Variable wird bei jeder Ball-Schläger Kollision um einen erhöht, und bei Tor
-									// zurückgesetzt
+	private float leftPlayerSpeed, rightPlayerSpeed;
+	// private int tempCountCollision; // Variable wird bei jeder Ball-Schläger
+	// Kollision um einen erhöht, und bei Tor
+	// zurückgesetzt
 	private boolean up, down, up1, down1; // Variablen für die Funktion der Schläger und der Tastatur. (up, down für W
 											// und S; up1 und down1 für Pfeil-Hoch und Pfeil-Runter)
 	private boolean x1, y1; // (Start)-Richtung des Balls.
-	private int weitey, weitex; // Schrittweite des Balls jeweils in X- und in Y- Richtung
-	private double boostSpeed, // Zusatzschnelligkeit des Balls, wird auf weitex und weitey addiert; erhöht
-								// sich bei Kollisionen des Balls mit den Schlägern/Spielern
-			temphalfPixelSpeed; // Übriggebliebene Pixel (zB. 0,3 Pixel). boostSpeed ist ein double Wert. Pixel
-								// sind ints. Bei jedem durchlauf bleiben kommazahl-Pixel liegen. Diese werden
-								// hier gesammelt.
-								// Immer wenn ein pixel gesammelt wurde, wird dieser auch genutzt. Dadurch kann
-								// die !!!Geschwindigkeit des Balls!!! letztendlich viel genauer verändert
-								// werden
+	private float weitey, weitex; // Schrittweite des Balls jeweils in X- und in Y- Richtung
+	private float boostSpeed; // Zusatzschnelligkeit des Balls, wird auf weitex und weitey addiert; erhöht
+								// sich bei Kollisionen des Balls mit den Schlägern/Spielern, und wird bei einem
+								// Punkt/Tor zurückgesetzt
 
 	private double difficulty; // die schwierigkeit des bots (Letztendlich wie oft er stehenbleibt. von 0.0 -
 								// 1.0; 0.1 ist er sehr schwer, 0.5 ist er leicht)
@@ -78,69 +70,86 @@ public class SinglePlayer extends JPanel implements KeyListener {
 	private boolean winkel, // Spezial-Modus mit verschiedenen Abprallwinkeln/geschwindigkeiten
 			kl, kr, // Kollision Links/Rechts?!?!
 			isRightPlayerBot, isLeftPlayerBot, impossibleMode; // Bot Einstellungen
-	private int weitex1, weitey1, weitex2, weitey2, weitex3, weitey3; // Hardgecodete Werte für die verschiedenen Winkel
-	private MyThread t;
-	private int sleepTime = 5; //ms
+	private float weitex1, weitey1, weitex2, weitey2, weitex3, weitey3; // Hardgecodete Werte für die verschiedenen
+																		// Winkel
+	private GameThread t;
+	private int sleepTime = 5; // ms
 	public final int EASY_MODE = 0;
 	public final int MIDDLE_MODE = 1;
 	public final int HARD_MODE = 2;
 	public final int CUSTOM_MODE = 3;
 	public int MODE = -1;
-	
+
 	public SinglePlayer(PongFrame frame) {
 		this.pongFrame = frame;
-//		float AR = frame.getASPECT_RATIO(); //Math.round(x*AR)
+		Dimension preferredSize = pongFrame.getGraphicResolution();
+		physicData = new PhysicData(50, 10, 200);
 		this.pauseAction = new PauseAction(frame);
 		this.setLayout(null);
-		this.setSize(1920, 1080);
-		this.setPreferredSize(new Dimension(1920,1080));
-		//		this.setSize(frame.getSize());
-//		this.setPreferredSize(pongFrame.getSize());
-		this.setLocation(0, 0);
-//		this.setTitle("Pong");
-//		this.setDefaultCloseOperation(3);
-		ball.setBounds(940, 500, 50, 50);
-		ball.setBackground(Color.BLACK);
-//		ball.reLocate(AR);
-		
+		ball = new Ball();
+		ball.setBounds(Math.round(physicData.getBallX() * pongFrame.getASPECT_RATIO()),
+				Math.round(physicData.getBallY() * pongFrame.getASPECT_RATIO()),
+				Math.round(physicData.getBallSize() * pongFrame.getASPECT_RATIO()),
+				Math.round(physicData.getBallSize() * pongFrame.getASPECT_RATIO())); // Sets all Bounds of the Ball from
+																						// physicsData times Aspect
+																						// Ratio to fit the screens
+																						// Resolution
+		centerPhysicObjects(preferredSize);
+		// JLabel positions from physicsData times Aspect Ratio to fit the screens
+		// Resolution
+		sLinks = new Schlag(Math.round(physicData.getBallSize() * pongFrame.getASPECT_RATIO()), // Set Y from physics *
+																								// aspectratio, as in
+				// mythread down there
+				Math.round((preferredSize.height
+						- Math.round(physicData.getPlayerOneHeight() * pongFrame.getASPECT_RATIO())) / 2),
+				Math.round(physicData.getPlayerOneWidth() * pongFrame.getASPECT_RATIO()),
+				Math.round(physicData.getPlayerOneHeight() * pongFrame.getASPECT_RATIO())); // Set
+		// JLabel positions from physicsData times Aspect Ratio to fit the screens
+		// Resolution
+		sRechts = new Schlag(
+				Math.round((1920 - 50 - Math.round(physicData.getPlayerTwoWidth() * pongFrame.getASPECT_RATIO()))
+						* pongFrame.getASPECT_RATIO()),
+				Math.round((preferredSize.height
+						- Math.round(physicData.getPlayerTwoHeight() * pongFrame.getASPECT_RATIO())) / 2),
+				Math.round(physicData.getPlayerTwoWidth() * pongFrame.getASPECT_RATIO()),
+				Math.round(physicData.getPlayerTwoHeight() * pongFrame.getASPECT_RATIO())); // Set
 
+		
 		winner = new MenuLabel(frame, "");
 		scoreLabel = new MenuLabel(frame, "");
 		countdown = new MenuLabel(frame, "");
-		
-		winner.setBounds(450, 900, 1000, 100);
-		winner.setFont(new Font("Arial", Font.BOLD, 50));
-		scoreLabel.setBounds(1920 / 2 - 50, 10, 400, 50);
-		scoreLabel.setFont(new Font("Arial", Font.BOLD, 30));
-		
-		sLinks.setBackground(Color.BLACK);
-//		sLinks.reLocate(AR);
-		sRechts.setBackground(Color.BLACK);
-//		sRechts.reLocate(AR);
-		countdown.setBounds(660, 100, 600, 300);
-		countdown.setFont(new Font("Arial", Font.BOLD, 150));
+		// SetBounds(X,Y,WIDTH,HEIGHT);
+		winner.setBounds(Math.round(450 * pongFrame.getASPECT_RATIO()), Math.round(900 * pongFrame.getASPECT_RATIO()),
+				Math.round(1000 * pongFrame.getASPECT_RATIO()), Math.round(100 * pongFrame.getASPECT_RATIO()));
+		winner.setFont(pongFrame.getGLOBAL_FONT().deriveFont(50*pongFrame.getASPECT_RATIO()));
+		winner.setOpaque(false);
+		scoreLabel.setBounds(0, Math.round(10 * pongFrame.getASPECT_RATIO()), preferredSize.width,
+				Math.round(50 * pongFrame.getASPECT_RATIO()));
+		scoreLabel.setFont(pongFrame.getGLOBAL_FONT().deriveFont(30*pongFrame.getASPECT_RATIO()));
+		scoreLabel.setOpaque(false);
+		countdown.setBounds(Math.round(600 * pongFrame.getASPECT_RATIO()), // X
+				Math.round(100 * pongFrame.getASPECT_RATIO()), // Y
+				Math.round(750 * pongFrame.getASPECT_RATIO()), // WIDTH
+				Math.round(300 * pongFrame.getASPECT_RATIO()));// HEIGHT
+		countdown.setFont(pongFrame.getGLOBAL_FONT().deriveFont(150*pongFrame.getASPECT_RATIO()));
 		countdown.setHorizontalAlignment(SwingConstants.CENTER);
-		
+		countdown.setOpaque(false);
 		contentPane = new JPanel();
-		contentPane.setSize(1920, 1080);
-		contentPane.setPreferredSize(new Dimension(1920,1080));
-		contentPane.setLayout(null);
-//		contentPane.setSize(frame.getGraphicResolution());
-//		contentPane.setPreferredSize(frame.getGraphicResolution());
+		contentPane.setLocation(0, (pongFrame.getWindowResolution().height - preferredSize.height) / 2);
+		contentPane.setSize(preferredSize);
+		contentPane.setPreferredSize(preferredSize);
+		contentPane.setLayout(null); // Muss so sein....
 		contentPane.setBackground(Color.white);
 		contentPane.add(winner);
+		contentPane.add(scoreLabel);
+		contentPane.add(countdown);
 		contentPane.add(ball);
 		contentPane.add(sLinks);
 		contentPane.add(sRechts);
-		contentPane.add(scoreLabel);
-		contentPane.add(countdown);
+		this.setBackground(Color.black);
 		this.add(contentPane);
-//		this.setUndecorated(true);
-//		this.addKeyListener(this);
-//		this.setVisible(true);
-//		this.laufen();
-		 KeyboardFocusManager manager = KeyboardFocusManager.getCurrentKeyboardFocusManager();
-		    manager.addKeyEventDispatcher(new MyDispatcher());
+		KeyboardFocusManager manager = KeyboardFocusManager.getCurrentKeyboardFocusManager();
+		manager.addKeyEventDispatcher(new MyDispatcher());
 		// Configure Game
 		standardConfig();
 		firstThreadStart = true;
@@ -154,61 +163,74 @@ public class SinglePlayer extends JPanel implements KeyListener {
 		this.setCursor(transparentCursor);
 	}
 
+	private void centerPhysicObjects(Dimension preferredSize) { // Center Ball and 2 Player
+		centerBall();
+		physicData.setPlayerOneLocation(50, (1080 - physicData.getPlayerOneHeight()) / 2);
+		physicData.setPlayerTwoLocation((1920 - 50 - 10), (1080 - physicData.getPlayerTwoHeight()) / 2);
+	}
+
+	private void centerBall() {
+		physicData.setBallLocation((1920 - physicData.getBallSize()) / 2, (1080 - physicData.getBallSize()) / 2); // Ball
+																												  // Zentrieren
+		ball.setLocation(Math.round(physicData.getBallX() * pongFrame.getASPECT_RATIO()),
+				Math.round(physicData.getBallY() * pongFrame.getASPECT_RATIO()));
+	}
+
 	public void setDifficulty(int difficulty) {
 		MODE = difficulty;
-		switch(difficulty) {
-			
-			case EASY_MODE:
-				this.difficulty = 0.35;
-				botSpeed = 7; // geschwindigkeit des bots 
-				erfassungsbereichDummerBot = 1200; // umso höher umso kleiner der bereich
-				
-				break;
-			case MIDDLE_MODE:
-				this.difficulty = 0.2; // 
-				botSpeed = 10; // geschwindigkeit des bots 
-				erfassungsbereichDummerBot = 800; // umso höher umso kleiner der bereich
-				
-				break;
-			case HARD_MODE:
-				this.difficulty = 0.1; //
-				botSpeed = 14; // geschwindigkeit des bots 
-				erfassungsbereichDummerBot = 600; // umso höher umso kleiner der bereich 
-				
-				break;
-			case CUSTOM_MODE:
-				break;
-			default:
-				break;
+		switch (difficulty) {
+
+		case EASY_MODE:
+			this.difficulty = 0.35;
+			botSpeed = 7; // geschwindigkeit des bots
+			erfassungsbereichDummerBot = 1200; // umso höher umso kleiner der bereich
+
+			break;
+		case MIDDLE_MODE:
+			this.difficulty = 0.2; //
+			botSpeed = 10; // geschwindigkeit des bots
+			erfassungsbereichDummerBot = 800; // umso höher umso kleiner der bereich
+
+			break;
+		case HARD_MODE:
+			this.difficulty = 0.1; //
+			botSpeed = 14; // geschwindigkeit des bots
+			erfassungsbereichDummerBot = 600; // umso höher umso kleiner der bereich
+
+			break;
+		case CUSTOM_MODE:
+			break;
+		default:
+			break;
 		}
 	}
+
 	private void standardConfig() {
 
 		scoreLabel.setText("0 : 0");
-//		newGame = false;
-//		tempCountCollision = 0;
-		ball.setLocation(940, 500);
 		// einstellungesn des bots
 		isRightPlayerBot = true; // sp = true = rechter spieler ist ein bot
 		isLeftPlayerBot = false;// sp2 = true = linker spieler ist ein bot
-		impossibleMode = false; //SPECIAL SPECIAL, NICHT SINNVOLL FÜR DEN SCHWIERIGKEITSGRAD
-		difficulty = 0.2; 
+		impossibleMode = false; // SPECIAL SPECIAL, NICHT SINNVOLL FÜR DEN SCHWIERIGKEITSGRAD
+		difficulty = 0.2;
 		botSpeed = 14; // geschwindigkeit des bots
-		erfassungsbereichDummerBot = 800; // umso höher umso kleiner der bereich 
+		erfassungsbereichDummerBot = 800; // umso höher umso kleiner der bereich
 		// einstellung der restlichen optionen im spiel
 		winkel = true;
 		// startwerte für die winkel
 		weitey = 5; // schrittweite des balls in y richtung
 		weitex = 5; // schrittweite des balls in x richtung
 		// Es gibt 3 verschiedene Abrallwinkel
-		weitey1 = 4; 	// weitey1 - 3 und weitex1 - 3 sind die Winkeleinstellungen umso höher man diese
+		weitey1 = 4; // weitey1 - 3 und weitex1 - 3 sind die Winkeleinstellungen umso höher man diese
 						// einstellt umso flacher der winkel.
-						//weitex/y1: am flachesten; weitex/y2: flacher; weitex/y3: normal, 45°
-		weitex1 = 8; 	//
-		weitey2 = 5;	//
-		weitex2 = 7; 	////TODO: EINE MENGE SPIELRAUM FÜR SCHWIERIGKEITSGRADE, SCHMETTERBÄLLE ETC	
-		weitey3 = 6;	//
-		weitex3 = 6;	//
+						// weitex/y1: am flachesten; weitex/y2: flacher; weitex/y3: normal, 45°
+		weitex1 = 8; //
+		weitey2 = 5; //
+		weitex2 = 7; //// TODO: EINE MENGE SPIELRAUM FÜR SCHWIERIGKEITSGRADE, SCHMETTERBÄLLE ETC
+		weitey3 = 6; //
+		weitex3 = 6; //
+
+		centerBall();
 
 		leftPlayerSpeed = 7;
 		rightPlayerSpeed = 7;
@@ -227,12 +249,11 @@ public class SinglePlayer extends JPanel implements KeyListener {
 		scoreLabel.setText(scoreLinks + " : " + scoreRechts);
 		if (spielGestartet) {
 			spielGestartet = false;
-			
-			//Ball in die Mitte
-			ball.setLocation(940, 500);
-			//System.out.println("BALL WIRD ZURÜCKGESETZT AUF X940 Y500 timestamp: "+System.currentTimeMillis());
 
-			//Hat jemand gewonnen?
+			// Ball in die Mitte
+			centerBall();
+
+			// Hat jemand gewonnen?
 			if (scoreLinks == maxPunkte) {
 				timer.schedule(new TimerTask() {
 					public void run() {
@@ -242,7 +263,7 @@ public class SinglePlayer extends JPanel implements KeyListener {
 					}
 				}, 5000);
 				winner.setText("Linker Spieler hat mit " + scoreLinks + ":" + scoreRechts + " Gewonnen");
-			}else if (scoreRechts == maxPunkte) {
+			} else if (scoreRechts == maxPunkte) {
 				timer.schedule(new TimerTask() {
 					public void run() {
 						stopGame();
@@ -253,21 +274,16 @@ public class SinglePlayer extends JPanel implements KeyListener {
 				winner.setText("Rechter Spieler hat mit " + scoreRechts + ":" + scoreLinks + " Gewonnen");
 			}
 
-			//Hat noch keiner gewonnen?
+			// Hat noch keiner gewonnen?
 			if (scoreLinks < maxPunkte && scoreRechts < maxPunkte) {
 				timer.schedule(new TimerTask() {
 					public void run() {
-//						tempCountCollision = 0;
-
-						//System.out.println("ZURÜCKSETZEN, timestamp: "+System.currentTimeMillis());
-						
 						boostSpeed = 0;
-						temphalfPixelSpeed = 0;
 						kl = false;
 						kr = false;
 						weitex = 5;
 						weitey = 5;
-						ball.setLocation(940, 500);
+						centerBall();
 						startGame();
 					}
 				}, 3000);
@@ -275,159 +291,120 @@ public class SinglePlayer extends JPanel implements KeyListener {
 			}
 		}
 	}
+
 	private void countdown(int seconds) {
-		if(!countdownActive) {
+		if (!countdownActive) {
 			countdownActive = true;
 			shouldCountdown = true;
-			
-			if(spielGestartet) {
+
+			if (spielGestartet) {
 				spielGestartet = false;
-			}		
-//			timer.schedule(new TimerTask() {
-//				
-//				@Override
-//				public void run() {
-////					System.out.println("halo");
-//
-//				}
-//			}, seconds*1000);
-			RunWrapper run = new RunWrapper(seconds*1000);
-//			run.run();
+			}
+			RunWrapper run = new RunWrapper(seconds * 1000);
 			Thread t = new Thread(run);
 			t.start();
 		}
 	}
+
 	// startet den thread
 	public void startGame() {
 		if (firstThreadStart) {
 			firstThreadStart = false;
 			System.out.println("FIRST THREAD START");
-			t = new MyThread();
+			t = new GameThread();
 			t.start();
 			spielGestartet = true;
-			//System.out.println("VARIANTE1");
-		}else if(!spielGestartet) {
+		} else if (!spielGestartet) {
 			spielGestartet = true;
-			//System.out.println("VARIANTE2");
 		}
 	}
+
 	private void pauseGame() {
 		pauseMenu = true;
 		shouldCountdown = false;
 	}
+
 	public void continueGame() {
 		countdown(3);
 		pauseMenu = false;
 	}
+
 	public void restartGame() {
 		standardConfig();
 		countdown(3);
 		pauseMenu = false;
 		startGame();
 		spielGestartet = false;
-//		startGame();
-//		stoppen();
 	}
+
 	public void stopGame() {
 		standardConfig();
 		pauseMenu = true;
 		spielGestartet = false;
 	}
-	
-//	private void startPhysics() {
-//		if (!spielGestartet) {
-//			spielGestartet = true;
-//		}
-//	}
-int i234 = 0;
-	private void ballBewegung(int x, int y) {
-		//System.out.println("BEWEGE DEN BALL(("+i234+"));  PARAMETER: X:"+x+" Y:"+y);
-		i234++;
-		Point p = ball.getLocation(); //TODO: RES
 
-		p.x = p.x - x;
-		p.y = p.y + y;
-
-		//System.out.println("Ball position: "+p+" timestamp: "+System.currentTimeMillis());
+	private void ballBewegung(float x, float y) {
+		float ballX = physicData.getBallX();
+		float ballY = physicData.getBallY();
+		ballX -= x;
+		ballY += y;
 		// Objekt Kollision
 
-		Dimension ds = contentPane.getSize();
-		int radius = ball.getWidth() / 2;
+		Dimension ds = new Dimension(1920, 1080); // Spielfeld größe
+		int radius = physicData.getBallSize() / 2;
 
 		// Kollision mit schläger 1
 
-		if (Collision.circleToRect(p.x + radius, p.y + radius, radius, sLinks.getLocation().x, sLinks.getLocation().y,
-				10, 200)) {
-
+		if (Collision.circleToRect(ballX + radius, ballY + radius, radius, physicData.getPlayerOneX(),
+				physicData.getPlayerOneY(), physicData.getPlayerOneWidth(), physicData.getPlayerOneHeight())) {
+			boostSpeed += 0.1;
 			x1 = true; // diese abfrage ändert die x richtung des balls nach der kollision so dass der
 						// Ball reflektiert wird
 
-			int ballY = ball.getLocation().y - sLinks.getLocation().y + ball.getSize().height;
-
+			float ballHeight = ballY - physicData.getPlayerOneY() + physicData.getBallSize();
 			// kr gegen doppelkollision
 
 			if (kr == false) {
-
-				// winkel false gleich keine winkel
-				if (winkel == false) {
-
-					int tempBoostSpeed = calcBoostSpeed();
-
-					weitey = weitey + tempBoostSpeed;
-					weitex = weitex + tempBoostSpeed;
-				}
-
 				kr = true;
 				kl = false;
 				// winkel true gleich winkel
 
 				if (winkel == true) {
-
 					// wenn der ball eine kollision mit einem wert von unter 40 hatt ist der
 					// abprallwinkel am flacheseten
-					if (ballY <= 40) {
-						int tempBoostSpeed = calcBoostSpeed();
-
-						weitey = weitey1 + tempBoostSpeed;
-						weitex = weitex1 + tempBoostSpeed;
+					if (ballHeight <= 40) {
+						weitex = weitex1 + boostSpeed;
+						weitey = weitey1 + boostSpeed;
 					}
 
 					// Wenn der ball eine kollision mit einem wert zwischen 40 und 90 hat ist der
 					// Winkel leicht flacher als der normale 45° Winkel
-					if (ballY > 40 && ballY <= 90) {
-						int tempBoostSpeed = calcBoostSpeed();
-
-						weitey = weitey2 + tempBoostSpeed;
-						weitex = weitex2 + tempBoostSpeed;
+					if (ballHeight > 40 && ballHeight <= 90) {
+						weitex = weitex2 + boostSpeed;
+						weitey = weitey2 + boostSpeed;
 					}
 
 					// wenn der ball eine kollision mit einem wert zwischen 90 und 160 hatt ist der
 					// winkel des balls 45°
-					if (ballY > 90 && ballY <= 160) {
-						int tempBoostSpeed = calcBoostSpeed();
-
-						weitey = weitey3 + tempBoostSpeed;
-						weitex = weitex3 + tempBoostSpeed;
+					if (ballHeight > 90 && ballHeight <= 160) {
+						weitex = weitex3 + boostSpeed;
+						weitey = weitey3 + boostSpeed;
 					}
 
 					// wenn der ball eine kollision mit einem wert zwischen 160 und 210 hatt ist der
 					// winkel leicht flacher als der normale winkel der 45° beträgt
 
-					if (ballY > 160 && ballY <= 210) {
-						int tempBoostSpeed = calcBoostSpeed();
-
-						weitey = weitey2 + tempBoostSpeed;
-						weitex = weitex2 + tempBoostSpeed;
+					if (ballHeight > 160 && ballHeight <= 210) {
+						weitey = weitey2 + boostSpeed;
+						weitex = weitex2 + boostSpeed;
 					}
 
 					// wenn der ball eine kollision mit einem wert von über 210 hatt ist der
 					// abprallwinkel am flacheseten
 
-					if (ballY > 210) {
-						int tempBoostSpeed = calcBoostSpeed();
-
-						weitey = weitey1 + tempBoostSpeed;
-						weitex = weitex1 + tempBoostSpeed;
+					if (ballHeight > 210) {
+						weitex = weitex1 + boostSpeed;
+						weitey = weitey1 + boostSpeed;
 					}
 				}
 			}
@@ -435,23 +412,15 @@ int i234 = 0;
 
 		// Kollision mit schläger 2
 
-		if (Collision.circleToRect(p.x + radius, p.y + radius, radius, sRechts.getLocation().x, sRechts.getLocation().y,
-				10, 200)) {
-
-			int ballY = ball.getLocation().y - sRechts.getLocation().y + ball.getSize().height;
+		if (Collision.circleToRect(ballX + radius, ballY + radius, radius, physicData.getPlayerTwoX(),
+				physicData.getPlayerTwoY(), physicData.getPlayerTwoWidth(), physicData.getPlayerTwoHeight())) {
+			boostSpeed += 0.1;
+			float ballHeight = physicData.getBallY() - physicData.getPlayerTwoY() + physicData.getBallSize();
 
 			x1 = false; // diese abfrage ändert die x richtung des balls nach der kollision so das der
 						// ball reflektiert wird
 
 			if (kl == false) {
-
-				if (winkel == false) {
-					int tempBoostSpeed = calcBoostSpeed();
-
-					weitey = weitey + tempBoostSpeed;
-					weitex = weitex + tempBoostSpeed;
-				}
-
 				kl = true;
 				kr = false;
 
@@ -459,94 +428,76 @@ int i234 = 0;
 
 					// wenn der ball eine kollision mit einem wert von unter 40 hatt ist der
 					// abprallwinkel am flacheseten
-					if (ballY <= 40) {
-						int tempBoostSpeed = calcBoostSpeed();
-
-						weitey = weitey1 + tempBoostSpeed;
-						weitex = weitex1 + tempBoostSpeed;
+					if (ballHeight <= 40) {
+						weitex = weitex1 + boostSpeed;
+						weitey = weitey1 + boostSpeed;
 					}
 
 					// wenn der ball eine kollision mit einem wert zwischen 40 und 90 hatt ist der
 					// winkel leicht flacher als der normale winkel der 45° beträgt
-					if (ballY > 40 && ballY <= 90) {
-						int tempBoostSpeed = calcBoostSpeed();
-
-						weitey = weitey2 + tempBoostSpeed;
-						weitex = weitex2 + tempBoostSpeed;
+					if (ballHeight > 40 && ballHeight <= 90) {
+						weitex = weitex2 + boostSpeed;
+						weitey = weitey2 + boostSpeed;
 					}
 
 					// wenn der ball eine kollision mit einem wert zwischen 90 und 160 hatt ist der
 					// winkel des balls 45°
-					if (ballY > 90 && ballY <= 160) {
-						int tempBoostSpeed = calcBoostSpeed();
-
-						weitey = weitey3 + tempBoostSpeed;
-						weitex = weitex3 + tempBoostSpeed;
+					if (ballHeight > 90 && ballHeight <= 160) {
+						weitex = weitex3 + boostSpeed;
+						weitey = weitey3 + boostSpeed;
 					}
 
 					// wenn der ball eine kollision mit einem wert zwischen 160 und 210 hatt ist der
 					// winkel leicht flacher als der normale winkel der 45° beträgt
 
-					if (ballY > 160 && ballY <= 210) {
-						int tempBoostSpeed = calcBoostSpeed();
-
-						weitey = weitey2 + tempBoostSpeed;
-						weitex = weitex2 + tempBoostSpeed;
+					if (ballHeight > 160 && ballHeight <= 210) {
+						weitex = weitex2 + boostSpeed;
+						weitey = weitey2 + boostSpeed;
 					}
 
 					// wenn der ball eine kollision mit einem wert von über 210 hatt ist der
 					// abprallwinkel am flacheseten
 
-					if (ballY > 210) {
-						int tempBoostSpeed = calcBoostSpeed();
-
-						weitey = weitey1 + tempBoostSpeed;
-						weitex = weitex1 + tempBoostSpeed;
+					if (ballHeight > 210) {
+						weitex = weitex1 + boostSpeed;
+						weitey = weitey1 + boostSpeed;
 					}
 				}
 			}
 		}
-		//System.out.println("Ball position2: "+p);
 		// Seiten Kollision
 
-		if (p.x < 0) { // kollision links hinten
-			//System.out.println("PUNKT RECHTS");
+		if (ballX < 0) { // kollision links hinten
 			scoreRechts++;
+			boostSpeed = 0;
 			this.stoppen();
 		}
 
-		if (p.y < 0) { // kollision oben
+		if (ballY < 0) { // kollision oben
 			y1 = true;
 		}
 
-		if (ds.width <= p.x + ball.getSize().width) { // kollision rechts hinten
-			//System.out.println("PUNKT LINKS");
+		if (ds.width <= ballX + physicData.getBallSize()) { // kollision rechts hinten
 			scoreLinks++;
+			boostSpeed = 0;
 			this.stoppen();
 		}
 
-		if (ds.height <= p.y + ball.getSize().height) { // kollision unten
+		if (ds.height <= ballY + physicData.getBallSize()) { // kollision unten
 			y1 = false;
 		}
 
-//		if (spielGestartet == true && firstThreadStart == true) {
-//			firstThreadStart = false;
-//			//System.out.println("METHOD1, SETZE IHN AUF: "+p+" timestamp: "+System.currentTimeMillis());
-//			ball.setLocation(p);
-//		}
-
 		if (spielGestartet) {
-			//System.out.println("METHOD2, SETZE IHN AUF: "+p+" timestamp: "+System.currentTimeMillis());
-			ball.setLocation(p);
-			//panel.setlocation
+			physicData.setBallLocation(ballX, ballY);
+			ball.setLocation(Math.round(ballX * pongFrame.getASPECT_RATIO()),
+					Math.round(ballY * pongFrame.getASPECT_RATIO()));
 		}
 	}
 //  der bot
 
-	private void botBewegungKomplex(int bally) {
-
-		int schlagy;
-
+	private void botBewegungKomplex(float bally) {
+		float schlagY = physicData.getPlayerTwoY(); // PlayerTwoY
+		float schlagX = physicData.getPlayerTwoX();
 		// wenn schwer auf fals ist wird der bot benutzt der sich in die richtung des
 		// balls bewegt
 
@@ -555,262 +506,298 @@ int i234 = 0;
 
 			// rand kollision oben der schläger wird leicht zurückgesetzt da er sich sonst
 			// nichtmehr bewegen kann
-			if (sRechts.getY() >= 880) {
-				sRechts.setLocation(sRechts.getX(), 875);
+			if (physicData.getPlayerTwoY() + physicData.getPlayerTwoHeight() >= 1080) {
+				physicData.setPlayerTwoLocation(schlagX, 1080 - physicData.getPlayerTwoHeight());
+				sRechts.setLocation(Math.round(schlagX * pongFrame.getASPECT_RATIO()),
+						Math.round((1080 - physicData.getPlayerTwoHeight()) * pongFrame.getASPECT_RATIO()));
 			}
 
 			// rand kollision unten der schläger wird leicht zurückgesetzt da er sich sonst
 			// nichtmehr bewegen kann
-			if (sRechts.getY() <= 5) {
-				sRechts.setLocation(sRechts.getX(), 10);
+			if (physicData.getPlayerTwoY() <= 0) {
+				physicData.setPlayerTwoLocation(schlagX, 0);
+				sRechts.setLocation(Math.round(schlagX * pongFrame.getASPECT_RATIO()), 0);
 			}
 
 			// bewegt den schläger ind die mitte wenn ein punkt geffallen ist oder der ball
 			// auserhalb des zu erfassenen bereichs ist
-			if (spielGestartet == false || ball.getLocation().x < erfassungsbereichDummerBot) {
+			if (spielGestartet == false || physicData.getBallX() < erfassungsbereichDummerBot) {
 
-				if (sRechts.getY() < 400) {
-					schlagy = sRechts.getY() + botSpeed;
-					sRechts.setLocation(sRechts.getX(), schlagy);
+				if (physicData.getPlayerTwoY() < 400) {
+					schlagY = physicData.getPlayerTwoY() + botSpeed;
+					physicData.setPlayerTwoLocation(schlagX, schlagY);
+					sRechts.setLocation(Math.round(schlagX * pongFrame.getASPECT_RATIO()),
+							Math.round(schlagY * pongFrame.getASPECT_RATIO()));
 				}
 
-				if (sRechts.getY() + 200 > 600) {
-					schlagy = sRechts.getY() - botSpeed;
-					sRechts.setLocation(sRechts.getX(), schlagy);
+				if (physicData.getPlayerTwoY() + physicData.getPlayerTwoHeight() > 600) {
+					schlagY = physicData.getPlayerTwoY() - botSpeed;
+					physicData.setPlayerTwoLocation(schlagX, schlagY);
+					sRechts.setLocation(Math.round(schlagX * pongFrame.getASPECT_RATIO()),
+							Math.round(schlagY * pongFrame.getASPECT_RATIO()));
 				}
-
 			}
-			//Math.random: Wert zwischen 0.0 und 0.99
-			//Wenn der random Wert kleiner als der eingestellte difficulty Wert ist, bleibt der Bot einfach stehen.
-			//Vorsicht bei zu hohen difficulty Werten(höchstens 0.4 empfohlen). Sieht sonst nur verbuggt aus.
-			dumm = Math.random() < difficulty; 
-
-			
+			// Math.random: Wert zwischen 0.0 und 0.99
+			// Wenn der random Wert kleiner als der eingestellte difficulty Wert ist, bleibt
+			// der Bot einfach stehen.
+			// Vorsicht bei zu hohen difficulty Werten(höchstens 0.4 empfohlen). Sieht sonst
+			// nur verbuggt aus.
+			dumm = Math.random() < difficulty;
 			// bewegt den schläger in die richtung in die der ball sich bewegt
 
-			if (spielGestartet == true && ball.getLocation().x > erfassungsbereichDummerBot) {
-
+			if (spielGestartet == true && physicData.getBallX() > erfassungsbereichDummerBot) {
 				if (!dumm) {
 
 					// bewegt den schläger nach unten wenn der ball sich nach unten bewegt und der
 					// ball über dem schläger ist
 
-					if (y1 == true && bally > sRechts.getY() && sRechts.getY() >= 0 && sRechts.getY() <= 880) {
+					if (y1 == true && bally > physicData.getPlayerTwoY() && physicData.getPlayerTwoY() >= 0
+							&& physicData.getPlayerTwoY() + physicData.getPlayerTwoHeight() <= 1080) {
 
-						schlagy = sRechts.getY() + botSpeed;
-						sRechts.setLocation(sRechts.getX(), schlagy);
-
+						schlagY = physicData.getPlayerTwoY() + botSpeed;
+						physicData.setPlayerTwoLocation(schlagX, schlagY);
+						sRechts.setLocation(Math.round(schlagX * pongFrame.getASPECT_RATIO()),
+								Math.round(schlagY * pongFrame.getASPECT_RATIO()));
 					}
 
 					// bewegt den schläger nach oben wenn der ball sich nach unten bewegt und der
 					// ball unter dem schläger ist
 
-					else if (y1 == true && bally < sRechts.getY() + 200 && sRechts.getY() >= 0
-							&& sRechts.getY() <= 880) {
+					else if (y1 == true && bally < physicData.getPlayerTwoY() + physicData.getPlayerTwoHeight()
+							&& physicData.getPlayerTwoY() >= 0
+							&& physicData.getPlayerTwoY() + physicData.getPlayerTwoHeight() <= 1080) {
 
-						schlagy = sRechts.getY() - botSpeed;
-						sRechts.setLocation(sRechts.getX(), schlagy);
+						schlagY = physicData.getPlayerTwoY() - botSpeed;
+						physicData.setPlayerTwoLocation(schlagX, schlagY);
+						sRechts.setLocation(Math.round(schlagX * pongFrame.getASPECT_RATIO()),
+								Math.round(schlagY * pongFrame.getASPECT_RATIO()));
 					}
 
 					// bewegt den schläger nach unten wenn der ball sich nach oben bewegt und der
 					// ball über dem schläger ist
 
-					else if (y1 == false && bally > sRechts.getY() && sRechts.getY() >= 0 && sRechts.getY() <= 880) {
+					else if (y1 == false && bally > physicData.getPlayerTwoY() && physicData.getPlayerTwoY() >= 0
+							&& physicData.getPlayerTwoY() + physicData.getPlayerTwoHeight() <= 1080) {
 
-						schlagy = sRechts.getY() + botSpeed;
-						sRechts.setLocation(sRechts.getX(), schlagy);
-
+						schlagY = physicData.getPlayerTwoY() + botSpeed;
+						physicData.setPlayerTwoLocation(schlagX, schlagY);
+						sRechts.setLocation(Math.round(schlagX * pongFrame.getASPECT_RATIO()),
+								Math.round(schlagY * pongFrame.getASPECT_RATIO()));
 					}
 
 					// bewegt den schläger nach unten wenn der ball sich nach oben bewegt und der
 					// ball unter dem schläger ist
 
-					else if (y1 == false && bally < sRechts.getY() + 200 && sRechts.getY() >= 0
-							&& sRechts.getY() <= 880) {
+					else if (y1 == false && bally < physicData.getPlayerTwoY() + physicData.getPlayerTwoHeight()
+							&& physicData.getPlayerTwoY() >= 0
+							&& physicData.getPlayerTwoY() + physicData.getPlayerTwoHeight() <= 1080) {
 
-						schlagy = sRechts.getY() - botSpeed;
-						sRechts.setLocation(sRechts.getX(), schlagy);
+						schlagY = physicData.getPlayerTwoY() - botSpeed;
+						physicData.setPlayerTwoLocation(schlagX, schlagY);
+						sRechts.setLocation(Math.round(schlagX * pongFrame.getASPECT_RATIO()),
+								Math.round(schlagY * pongFrame.getASPECT_RATIO()));
 					}
-
 				}
 			}
 		}
 		// bewgt den schläger auf die selbe höhe wie die des balles
 		if (impossibleMode == true) {
-			schlagy = bally;
-			sRechts.setLocation(sRechts.getX(), schlagy);
+			schlagY = bally;
+
+			physicData.setPlayerTwoLocation(schlagX, schlagY);
+			sRechts.setLocation(Math.round(schlagX * pongFrame.getASPECT_RATIO()),
+					Math.round(schlagY * pongFrame.getASPECT_RATIO()));
 
 		}
-
 	}
 
-	// der bot für den linken schläger bewgt den schläger auf die selbe höhe wie die
-	// des balles
-
-	private void botBewegungEinfach(int bally) {
-		int schlagy;
-		schlagy = bally;
-		sLinks.setLocation(sLinks.getX(), schlagy);
-
-	}
-
-	// der thread über den der ball der bot und die bewegung der schläger läuft
-
-	private int calcBoostSpeed() {
-		/*
-		 * Variablen Hilfe:
-		 * 
-		 * boostSpeed ist die Extra-Geschwindigkeit, welche sich bei jeder Ball-Schläger Kollision erhöht.
-		 * temphalfPixelSpeed sammelt die Dezimal-Werte(Nach dem Komma) von boostSpeed, da es nunmal nur ganze Pixel gibt.
-		 * Sobald ein ganzer Pixel in temphalfPixelSpeed gesammelt wurde, wird dieser der tempBoostSpeed hinzugefügt,
-		 * und von temphalfPixelSpeed abgezogen.
-		 * tempBoostSpeed ist die Geschwindigkeit die im temporären durchlauf wirklich hinzugefügt wird
-		 * tempExtraSpeed ist nur eine weitere temporäre Variable, die henötigt wird, um den Ganzzahl-Wert von temphalfPixelSpeed herauszufiltern
-		 */
-		boostSpeed += 0.1; //Verschnellert den Ball bei jeder Ball-Schläger-Kollision
-		boostSpeed = Math.round(boostSpeed * 100000.0) / 100000.0; //Auf die 5. Dezimalstelle aufrunden	
-		
-		temphalfPixelSpeed += (boostSpeed - (int) boostSpeed); // Der Wert nach dem Dezimalpunkt
-		temphalfPixelSpeed = Math.round(temphalfPixelSpeed * 100000.0) / 100000.0; //Auf die 5. Dezimalstelle aufrunden	
-		int tempBoostSpeed = (int) boostSpeed; // Der Wert vor dem Dezimalpunkt
-		
-		if (temphalfPixelSpeed > 1) { // Wenn genug Dezimalwerte gesammelt wurden, dass wieder ein ganzer Pixel
-										// zusammen ist
-			int tempExtraSpeed = (int) temphalfPixelSpeed; // Der Wert vor dem Dezimalpunkt
-			tempBoostSpeed += tempExtraSpeed; // Den gesammelten Pixel der Geschwindigkeit hinzufügen
-			temphalfPixelSpeed -= tempExtraSpeed; // Den gesammelten Pixel wieder von der sammel-variable abziehen
-			temphalfPixelSpeed = Math.round(temphalfPixelSpeed * 100000.0) / 100000.0; //Auf die 5. Dezimalstelle aufrunden	
-			//System.out.println("I GOT A PIXEL");
-		}		
-		//System.out.println("tempBoostSpeed: "+tempBoostSpeed+" boostSpeed: "+boostSpeed+" temphalfPixelSpeed2: "+temphalfPixelSpeed);
-		return tempBoostSpeed;
-	}
-	
-	class MyThread extends Thread {
+	class GameThread extends Thread {
 		public void run() {
 
 			while (true) {
-				//System.out.println("DIES IST DIE WHILE-SCHLEIFE DES GRAUENS");
 				// während gestartet
 				while (spielGestartet && !pauseMenu) {
-					//System.out.println("ICH BIN GESTARTET! UND SPIELE!");
-					int xu = sLinks.getX();
-					int yu = sLinks.getY();
-					int x1u = sRechts.getX();
-					int y1u = sRechts.getY();
-					
-					// wenn der rechte bot true ist wird hierrüber die bewegungen des bots afgerufen
-					if (isRightPlayerBot == true) {
-						botBewegungKomplex(ball.getLocation().y);
+					// System.out.println("ICH BIN GESTARTET! UND SPIELE!");
+					float playerOneX = physicData.getPlayerOneX();
+					float playerOneY = physicData.getPlayerOneY();
+					float playerTwoX = physicData.getPlayerTwoX();
+					float playerTwoY = physicData.getPlayerTwoY();
+
+					// Wenn der rechte Spieler ein Bot ist, wird hiermit seine Bewegung ausgeführt
+					if (isRightPlayerBot) {
+						botBewegungKomplex(physicData.getBallY());
 					}
-					// wenn der linke bot true ist wird hierrüber die bewegungen des bots aufgerufen
-					if (isLeftPlayerBot == true) {
-						botBewegungEinfach(ball.getY() - 80);
+					// Wenn der linke Spieler ein Bot ist, wird hiermit seine Bewegung ausgeführt
+					if (isLeftPlayerBot) {
+						botBewegungKomplex(physicData.getBallY()); // -80 und einfacheBewegung, eh nie benutzt
 					}
-					int difX = 0, difY = 0;
-					if (x1) {
+
+					float difX = 0, difY = 0;
+					if (x1) { // Ball nach links
 						difX = -weitex;
-//						ballBewegung(-weitex, 0);
-//						//System.out.println("X: "+(-weitex)+" Y:"+0);
-					}else if(!x1) {
+					} else if (!x1) { // ball nach rechts
 						difX = weitex;
 					}
-
-//					if (x1 == false) {
-//						ballBewegung(weitex, 0);
-//						//System.out.println("X: "+weitex+" Y:"+0);
-//					}
-
-					if (y1) {
+					if (y1) {// ball nach unten
 						difY = weitey;
-//						ballBewegung(0, weitey);
-//						//System.out.println("X: "+0+" Y:"+weitey);
-					}else if (!y1) {
+					} else if (!y1) {// ball nach unten
 						difY = -weitey;
-//						ballBewegung(0, -weitey);
-//						//System.out.println("X: "+0+" Y:"+(-weitey));
 					}
 					ballBewegung(difX, difY);
 
-					if (isLeftPlayerBot == false) {
-
-						if (up == true && sLinks.getY() > 0) {
-							yu = yu - leftPlayerSpeed;
-							sLinks.setLocation(xu, yu);
+					if (!isLeftPlayerBot) {
+						if (up) {
+							if (playerOneY - leftPlayerSpeed < 0) {
+								playerOneY = 0;
+								physicData.setPlayerOneLocation(playerOneX, playerOneY);
+								sLinks.setLocation(Math.round(playerOneX * pongFrame.getASPECT_RATIO()),
+										Math.round(playerOneY * pongFrame.getASPECT_RATIO()));
+							} else {
+								playerOneY = playerOneY - leftPlayerSpeed;
+								physicData.setPlayerOneLocation(playerOneX, playerOneY);
+								sLinks.setLocation(Math.round(playerOneX * pongFrame.getASPECT_RATIO()),
+										Math.round(playerOneY * pongFrame.getASPECT_RATIO()));
+							}
 						}
-
-						if (down == true && sLinks.getY() <= 900) {
-							yu = yu + leftPlayerSpeed;
-							sLinks.setLocation(xu, yu);
+						if (down) {
+							if ((playerOneY + leftPlayerSpeed + physicData.getPlayerOneHeight()) > 1080) {// pongFrame.getGraphicResolution().height
+								playerOneY = 1080 - physicData.getPlayerOneHeight();
+								physicData.setPlayerOneLocation(playerOneX, playerOneY);
+								sLinks.setLocation(Math.round(playerOneX * pongFrame.getASPECT_RATIO()),
+										Math.round(playerOneY * pongFrame.getASPECT_RATIO()));
+							} else {
+								playerOneY = playerOneY + leftPlayerSpeed;
+								physicData.setPlayerOneLocation(playerOneX, playerOneY);
+								sLinks.setLocation(Math.round(playerOneX * pongFrame.getASPECT_RATIO()),
+										Math.round(playerOneY * pongFrame.getASPECT_RATIO()));
+							}
 						}
 					}
 
-					if (isRightPlayerBot == false) {
+					if (!isRightPlayerBot) {
+						if (up1) {
+							if (playerTwoY < 0) {
+								playerTwoY = 0;
+								physicData.setPlayerTwoLocation(playerTwoX, playerTwoY);
+								sRechts.setLocation(Math.round(playerTwoX * pongFrame.getASPECT_RATIO()),
+										Math.round(playerTwoY * pongFrame.getASPECT_RATIO()));
 
-						if (up1 == true && sRechts.getY() > 0) {
-							y1u = y1u - rightPlayerSpeed;
-							sRechts.setLocation(x1u, y1u);
+							} else {
+								playerTwoY = playerTwoY - rightPlayerSpeed;
+								physicData.setPlayerTwoLocation(playerTwoX, playerTwoY);
+								sRechts.setLocation(Math.round(playerTwoX * pongFrame.getASPECT_RATIO()),
+										Math.round(playerTwoY * pongFrame.getASPECT_RATIO()));
+							}
 						}
+						if (down1) {
+							if (playerTwoY + rightPlayerSpeed + physicData.getPlayerTwoY() > 1080) {// pongFrame.getGraphicResolution().height
 
-						if (down1 == true && sRechts.getY() <= 900) {
-							y1u = y1u + rightPlayerSpeed;
-							sRechts.setLocation(x1u, y1u);
+								playerTwoY = 1080;
+								physicData.setPlayerTwoLocation(playerTwoX, playerTwoY);
+								sRechts.setLocation(Math.round(playerTwoX * pongFrame.getASPECT_RATIO()),
+										Math.round(playerTwoY * pongFrame.getASPECT_RATIO()));
+							} else {
+								playerTwoY = playerTwoY + rightPlayerSpeed;
+								physicData.setPlayerTwoLocation(playerTwoX, playerTwoY);
+								sRechts.setLocation(Math.round(playerTwoX * pongFrame.getASPECT_RATIO()),
+										Math.round(playerTwoY * pongFrame.getASPECT_RATIO()));
+							}
 						}
-
 					}
 
 					try {
-						
+
 						sleep(sleepTime);
 					} catch (IllegalArgumentException e) {
-						//System.out.println(e.getMessage());
+						// System.out.println(e.getMessage());
 					} catch (InterruptedException e) {
-						//System.out.println(e.getMessage());
+						// System.out.println(e.getMessage());
 					}
 				}
-//				System.out.println("HUHU; DU BIST NICHT IM SPIEL!");
-				//System.out.println("PAUSE? "+pauseMenu);
-				if(!pauseMenu) {
-					//Damit man die Schläger auch bewegen kann, wenn gerade ein Punkt erziehlt wurde, und der Countdown läuft
-					int xu = sLinks.getX();
-					int yu = sLinks.getY();
-					int x1u = sRechts.getX();
-					int y1u = sRechts.getY();
-	
-					if (isRightPlayerBot == true) {
-						botBewegungKomplex(ball.getLocation().y);
+				if (!pauseMenu) {
+					// Damit man die Schläger auch bewegen kann, wenn gerade ein Punkt erziehlt
+					// wurde, und der Countdown läuft
+					float playerOneX = physicData.getPlayerOneX();
+					float playerOneY = physicData.getPlayerOneY();
+					float playerTwoX = physicData.getPlayerTwoX();
+					float playerTwoY = physicData.getPlayerTwoY();
+
+					// wenn der rechte bot true ist wird hierrüber die bewegungen des bots afgerufen
+					if (isRightPlayerBot) {
+						botBewegungKomplex(physicData.getBallY());
 					}
-	
-					if (isLeftPlayerBot == false) {
-						if (up == true && sLinks.getY() > 0) {
-							yu = yu - leftPlayerSpeed;
-							sLinks.setLocation(xu, yu);
+					// wenn der linke bot true ist wird hierrüber die bewegungen des bots aufgerufen
+					if (isLeftPlayerBot) {
+						botBewegungKomplex(physicData.getBallY());
+					}
+
+					if (!isLeftPlayerBot) {
+						if (up) {
+							if (playerOneY - leftPlayerSpeed < 0) {
+								playerOneY = 0;
+								physicData.setPlayerOneLocation(playerOneX, playerOneY);
+								sLinks.setLocation(Math.round(playerOneX * pongFrame.getASPECT_RATIO()),
+										Math.round(playerOneY * pongFrame.getASPECT_RATIO()));
+							} else {
+								playerOneY = playerOneY - leftPlayerSpeed;
+								physicData.setPlayerOneLocation(playerOneX, playerOneY);
+								sLinks.setLocation(Math.round(playerOneX * pongFrame.getASPECT_RATIO()),
+										Math.round(playerOneY * pongFrame.getASPECT_RATIO()));
+							}
 						}
-	
-						if (down == true && sLinks.getY() <= 900) {
-							yu = yu + leftPlayerSpeed;
-							sLinks.setLocation(xu, yu);
+						if (down) {
+							if ((playerOneY + leftPlayerSpeed + physicData.getPlayerOneHeight()) > 1080) {// pongFrame.getGraphicResolution().height
+								playerOneY = 1080 - physicData.getPlayerOneHeight();
+								physicData.setPlayerOneLocation(playerOneX, playerOneY);
+								sLinks.setLocation(Math.round(playerOneX * pongFrame.getASPECT_RATIO()),
+										Math.round(playerOneY * pongFrame.getASPECT_RATIO()));
+							} else {
+								playerOneY = playerOneY + leftPlayerSpeed;
+								physicData.setPlayerOneLocation(playerOneX, playerOneY);
+								sLinks.setLocation(Math.round(playerOneX * pongFrame.getASPECT_RATIO()),
+										Math.round(playerOneY * pongFrame.getASPECT_RATIO()));
+							}
 						}
 					}
-	
-					if (isRightPlayerBot == false) {
-						if (up1 == true && sRechts.getY() > 0) {
-							y1u = y1u - rightPlayerSpeed;
-							sRechts.setLocation(x1u, y1u);
+
+					if (!isRightPlayerBot) {
+						if (up1) {
+							if (playerTwoY < 0) {
+								playerTwoY = 0;
+								physicData.setPlayerTwoLocation(playerTwoX, playerTwoY);
+								sRechts.setLocation(Math.round(playerTwoX * pongFrame.getASPECT_RATIO()),
+										Math.round(playerTwoY * pongFrame.getASPECT_RATIO()));
+
+							} else {
+								playerTwoY = playerTwoY - rightPlayerSpeed;
+								physicData.setPlayerTwoLocation(playerTwoX, playerTwoY);
+								sRechts.setLocation(Math.round(playerTwoX * pongFrame.getASPECT_RATIO()),
+										Math.round(playerTwoY * pongFrame.getASPECT_RATIO()));
+							}
 						}
-	
-						if (down1 == true && sRechts.getY() <= 900) {
-							y1u = y1u + rightPlayerSpeed;
-							sRechts.setLocation(x1u, y1u);
+						if (down1) {
+							if (playerTwoY + rightPlayerSpeed > 1080) {// pongFrame.getGraphicResolution().height
+
+								playerTwoY = 1080;
+								physicData.setPlayerTwoLocation(playerTwoX, playerTwoY);
+								sRechts.setLocation(Math.round(playerTwoX * pongFrame.getASPECT_RATIO()),
+										Math.round(playerTwoY * pongFrame.getASPECT_RATIO()));
+							} else {
+								playerTwoY = playerTwoY + rightPlayerSpeed;
+								physicData.setPlayerTwoLocation(playerTwoX, playerTwoY);
+								sRechts.setLocation(Math.round(playerTwoX * pongFrame.getASPECT_RATIO()),
+										Math.round(playerTwoY * pongFrame.getASPECT_RATIO()));
+							}
 						}
 					}
+
 				}
 				try {
 					sleep(sleepTime);
 				} catch (IllegalArgumentException e) {
-					//System.out.println(e.getMessage());
+					// System.out.println(e.getMessage());
 				} catch (InterruptedException e) {
-					//System.out.println(e.getMessage());
+					// System.out.println(e.getMessage());
 				}
 			}
 		}
@@ -842,12 +829,14 @@ int i234 = 0;
 		}
 
 		if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
-			if(pauseMenu) {
-				pauseAction.getPausePanel().resume();
-				continueGame();
-			}else {
-				pauseGame();
-				pauseAction.action();
+			if (pongFrame.getACTIVE_PANEL() == pongFrame.SINGLEPLAYER) {
+				if (pauseMenu) {
+					pauseAction.getPausePanel().resume();
+					continueGame();
+				} else {
+					pauseGame();
+					pauseAction.action();
+				}
 			}
 		}
 	}
@@ -872,61 +861,48 @@ int i234 = 0;
 			down1 = false;
 		}
 	}
+
 	private class MyDispatcher implements KeyEventDispatcher {
-	    @Override
-	    public boolean dispatchKeyEvent(KeyEvent e) {
-	      if (e.getID() == KeyEvent.KEY_PRESSED) {
-	        keyPressed(e);
-	      } else if (e.getID() == KeyEvent.KEY_RELEASED) {
-	        keyReleased(e);
-	      } else if (e.getID() == KeyEvent.KEY_TYPED) {
-	        keyTyped(e);
-	      }
-	      return false;
-	    }
-	  }
-	private class RunWrapper implements Runnable{
+		@Override
+		public boolean dispatchKeyEvent(KeyEvent e) {
+			if (e.getID() == KeyEvent.KEY_PRESSED) {
+				keyPressed(e);
+			} else if (e.getID() == KeyEvent.KEY_RELEASED) {
+				keyReleased(e);
+			} else if (e.getID() == KeyEvent.KEY_TYPED) {
+				keyTyped(e);
+			}
+			return false;
+		}
+	}
+
+	private class RunWrapper implements Runnable {
 		private int milliSeconds;
+
 		public RunWrapper(int milliSeconds) {
 			this.milliSeconds = milliSeconds;
 		}
+
 		@Override
 		public void run() {
-			synchronized(this) {
-				while(milliSeconds>0 && shouldCountdown) {
+			synchronized (this) {
+				while (milliSeconds > 0 && shouldCountdown) {
 					try {
-//						//System.out.println("setText: "+seconds);
-						int seconds =milliSeconds/1000;
-//						System.out.println("milliSeconds: "+milliSeconds);
-						int milli = milliSeconds-seconds*1000;
-//						System.out.println("milli: "+milli);
-						milli = Math.round(milli / 10) ; //TODO:
-						countdown.setText((seconds)+":"+milli);
-						milliSeconds-=10;
-						
+						int seconds = milliSeconds / 1000;
+						int milli = milliSeconds - seconds * 1000;
+						milli = Math.round(milli / 10); // TODO:
+						countdown.setText("0" + (seconds) + ":" + milli);
+						milliSeconds -= 10;
+
 						Thread.sleep(10);
 					} catch (InterruptedException e) {
 						e.printStackTrace();
 					}
 				}
 			}
-
-//				//System.out.println("END");
-				countdown.setText("");
-				startGame();
-				countdownActive = false;
+			countdown.setText("");
+			startGame();
+			countdownActive = false;
 		}
 	}
-	//Little Helper Class for Timer, Countdown
-//	private class Task extends TimerTask{
-//		
-//		int seconds;
-//		public Task(int seconds) {
-//			this.seconds = seconds;
-//		}
-//		@Override
-//		public void run() {
-//			countdown.setText(Integer.toString(seconds));
-//		}
-//	}
 }

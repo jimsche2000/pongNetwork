@@ -15,10 +15,7 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 
 import game.PongLocationData;
-import game.Spielfeld;
-import hauptmenu.JoinServerPanel;
 import hauptmenu.PongFrame;
-import main.PongMain;
 import multiplayer.server.ServerAttributes;
 import pongtoolkit.ObjectStringCoder;
 
@@ -37,8 +34,7 @@ public class ClientMainThread {
 	private PrintWriter writer;
 	private BufferedReader reader;
 	private String userName;
-	private final String nameAlreadyTakenError = "NAME_ALREADY_TAKEN!",
-			nameTakenQuestion = "IS_NAME_ALREADY_TAKEN?";
+	private final String nameAlreadyTakenError = "NAME_ALREADY_TAKEN!", nameTakenQuestion = "IS_NAME_ALREADY_TAKEN?";
 	private final String NO_CHAT_MESSAGE = "rHBvyWvqbR0JVs6x6g24";
 	private final String IP_ALREADY_IN_USE_ERROR = "IP_ALREADY_IN_USE_ERROR";
 	private final String GAME_START = "GAME_START";
@@ -47,30 +43,26 @@ public class ClientMainThread {
 	private final String PLAYER_LEFT_MODE = "PLAYER_LEFT_MODE";
 	private final String PLAYER_RIGHT_MODE = "PLAYER_RIGHT_MODE";
 	private final String IN_GAME_POSITIONS = "IN_GAME_POSITIONS";
-	
 
-
-	//	public static ArrayList<String> bingoSentences = new ArrayList<String>();
 	private PongFrame pongFrame;
-	
+
 	public ClientMainThread(PongFrame pongFrame) {
 		this.pongFrame = pongFrame;
 		serverList = new ArrayList<ServerAttributes>();
 
 	}
-	
-	public void startSearchForServer()
-	{
+
+	public void startSearchForServer() {
 		Thread serverSearcher = new Thread(new ServerSearcherThread());
 		serverSearcher.start();
 		setShouldSearchForServer(true);
 	}
-	
+
 	public boolean connectToServer() { // if true wait for server-response
 		try {
 
 			pongFrame.getClientChat().clear();
-			System.out.println(getConnectedServer()+"");
+			System.out.println(getConnectedServer() + "");
 			client = new Socket(getConnectedServer().getIP(), 5555);
 			reader = new BufferedReader(new InputStreamReader(client.getInputStream()));
 			writer = new PrintWriter(client.getOutputStream());
@@ -80,18 +72,21 @@ public class ClientMainThread {
 
 			sendMessageToServer(NO_CHAT_MESSAGE + "JOINING" + getUserName());
 
-			return true; //yolo
+			return true; // yolo
 		} catch (Exception e) {
-			appendTextMessages("Netzwerkverbindung konnte nicht hergestellt werden", pongFrame.getClientChat().LEVEL_ERROR);
+			appendTextMessages("Netzwerkverbindung konnte nicht hergestellt werden",
+					pongFrame.getClientChat().LEVEL_ERROR);
 			System.out.println("\n\nI BIMS 1 EXCEPTION\n\n");
 			e.printStackTrace();
 
 			return false;
 		}
 	}
+
 	public ArrayList<ServerAttributes> getServerlist() {
 		return serverList;
 	}
+
 	public String getNO_CHAT_MESSAGE() {
 		return NO_CHAT_MESSAGE;
 	}
@@ -123,22 +118,24 @@ public class ClientMainThread {
 	public String getIN_GAME_POSITIONS() {
 		return IN_GAME_POSITIONS;
 	}
+
 	public void setServerlist(ArrayList<ServerAttributes> serverlist) {
 		this.serverList = serverlist;
 	}
+
 	public boolean isShouldSearchForServer() {
 		return shouldSearchForServer;
 	}
 
 	public void setShouldSearchForServer(boolean shouldSearchForServer) {
 		this.shouldSearchForServer = shouldSearchForServer;
-		System.out.println("SETTING SHOULD SERCH FOR SERVER "+shouldSearchForServer);
+		System.out.println("SETTING SHOULD SERCH FOR SERVER " + shouldSearchForServer);
 	}
 
 	public boolean disconnectFromServer(boolean WasOnServerChat) {
 
 		System.out.println("iBims1leavenderdude");
-		
+
 		try {
 			if (WasOnServerChat)
 				sendMessageToServer(NO_CHAT_MESSAGE + "LEAVING" + getUserName());
@@ -204,41 +201,43 @@ public class ClientMainThread {
 			try {
 
 				while ((message = reader.readLine()) != null) {
-//					System.out.println("Hi, its \""+userName+"\". I got this message: \""+message+"\". Go, check if it works!");
 					if (message.contains(NO_CHAT_MESSAGE)) {
 						if (message.contains(nameTakenQuestion)) {
 							if (message.contains(nameAlreadyTakenError)) {
 
 								disconnectFromServer(false);
-								pongFrame.getMultiPlayer().getJoinServerPanel().clientAccepted(pongFrame.getMultiPlayer().getJoinServerPanel().NAME_ALREADY_IN_USE);
-							} else if(message.contains(IP_ALREADY_IN_USE_ERROR)){
-								
+								pongFrame.getMultiPlayer().getJoinServerPanel().clientAccepted(
+										pongFrame.getMultiPlayer().getJoinServerPanel().NAME_ALREADY_IN_USE);
+							} else if (message.contains(IP_ALREADY_IN_USE_ERROR)) {
+
 								disconnectFromServer(false);
-								pongFrame.getMultiPlayer().getJoinServerPanel().clientAccepted(pongFrame.getMultiPlayer().getJoinServerPanel().IP_ALREADY_IN_USE);
-								
-							}else {
-								pongFrame.getMultiPlayer().getJoinServerPanel().clientAccepted(pongFrame.getMultiPlayer().getJoinServerPanel().CLIENT_ACCEPTED);
+								pongFrame.getMultiPlayer().getJoinServerPanel().clientAccepted(
+										pongFrame.getMultiPlayer().getJoinServerPanel().IP_ALREADY_IN_USE);
+
+							} else {
+								pongFrame.getMultiPlayer().getJoinServerPanel().clientAccepted(
+										pongFrame.getMultiPlayer().getJoinServerPanel().CLIENT_ACCEPTED);
 							}
-						}else if(message.contains(GAME_START)) {
-							
-							if(message.contains(SPECTATOR_MODE)) {
+						} else if (message.contains(GAME_START)) {
+
+							if (message.contains(SPECTATOR_MODE)) {
 								pongFrame.showPane(pongFrame.CLIENT_LIVE_GAME_PANEL);
-								pongFrame.getClientLiveGamePanel().getSpielfeld().configSF(pongFrame.getClientLiveGamePanel().getSpielfeld().SPECTATOR);
-							}else if(message.contains(PLAYER_LEFT_MODE)) {
+								pongFrame.getClientLiveGamePanel().getSpielfeld()
+										.configSF(pongFrame.getClientLiveGamePanel().getSpielfeld().SPECTATOR);
+							} else if (message.contains(PLAYER_LEFT_MODE)) {
 								pongFrame.showPane(pongFrame.CLIENT_LIVE_GAME_PANEL);
-								pongFrame.getClientLiveGamePanel().getSpielfeld().configSF(pongFrame.getClientLiveGamePanel().getSpielfeld().PLAYER_LEFT);
-							}else if(message.contains(PLAYER_RIGHT_MODE)) {
+								pongFrame.getClientLiveGamePanel().getSpielfeld()
+										.configSF(pongFrame.getClientLiveGamePanel().getSpielfeld().PLAYER_LEFT);
+							} else if (message.contains(PLAYER_RIGHT_MODE)) {
 								pongFrame.showPane(pongFrame.CLIENT_LIVE_GAME_PANEL);
-								pongFrame.getClientLiveGamePanel().getSpielfeld().configSF(pongFrame.getClientLiveGamePanel().getSpielfeld().PLAYER_RIGHT);
+								pongFrame.getClientLiveGamePanel().getSpielfeld()
+										.configSF(pongFrame.getClientLiveGamePanel().getSpielfeld().PLAYER_RIGHT);
 							}
-						}else if(message.contains(IN_GAME_POSITIONS)) {
-							
-							
-							
+						} else if (message.contains(IN_GAME_POSITIONS)) {
+
 							safeInGameLocations(message.substring(message.indexOf("{")));
-							
-							
-						}else if(message.contains(GAME_STOP)) {
+
+						} else if (message.contains(GAME_STOP)) {
 							pongFrame.getClientLiveGamePanel().getSpielfeld().stopInGameSliderControl();
 							pongFrame.showPane(pongFrame.CLIENT_CONTROL_PANEL);
 						}
@@ -257,28 +256,17 @@ public class ClientMainThread {
 		}
 
 		private void safeInGameLocations(String locationData) {
-			//"{PLD="+ObjectStringCoder.objectToString(pLD)+"}"
-			
-			String objectString = locationData.substring(locationData.indexOf("{PLD=")+5, locationData.lastIndexOf("}"));
+
+			String objectString = locationData.substring(locationData.indexOf("{PLD=") + 5,
+					locationData.lastIndexOf("}"));
 			PongLocationData pLD = null;
 			try {
-				pLD = (PongLocationData)ObjectStringCoder.stringToObject(objectString);
+				pLD = (PongLocationData) ObjectStringCoder.stringToObject(objectString);
 			} catch (ClassNotFoundException | IOException e) {
 				e.printStackTrace();
 			}
 			pongFrame.getClientLiveGamePanel().getSpielfeld().updateLocations(pLD);
-//			System.out.println("PONG-LOCATION-DATA="+pLD);
 		}
-		
-//		public MessagesFromServerListener getMessagesFromServerListenerInstance() {
-//
-//			return MessagesFromServerListenerThreadHolder.INSTANCE;
-//		}
-//
-//		private  class MessagesFromServerListenerThreadHolder {
-//
-//			private final MessagesFromServerListener INSTANCE = new MessagesFromServerListener();
-//		}
 	}
 
 	private class ServerSearcherThread implements Runnable {
@@ -367,7 +355,8 @@ public class ClientMainThread {
 
 						if (pongFrame.isShowClientNetworkInformation())
 							appendTextMessages(
-									getUserName() + ">>> Done looping over all network interfaces. Now waiting for a reply!",
+									getUserName()
+											+ ">>> Done looping over all network interfaces. Now waiting for a reply!",
 									pongFrame.getClientChat().LEVEL_INFO);
 
 						// START-SCHLEIFE;
@@ -394,8 +383,10 @@ public class ClientMainThread {
 								continue; // Skip normal Gateway-Responses
 
 							if (pongFrame.isShowClientNetworkInformation())
-								appendTextMessages(getUserName() + ">>> Broadcast response from server: "
-										+ receivePacket.getAddress().getHostAddress(), pongFrame.getClientChat().LEVEL_INFO);
+								appendTextMessages(
+										getUserName() + ">>> Broadcast response from server: "
+												+ receivePacket.getAddress().getHostAddress(),
+										pongFrame.getClientChat().LEVEL_INFO);
 
 							// Informationen des Servers auslesen
 							String text = new String(receivePacket.getData(), "UTF-8");
@@ -432,7 +423,6 @@ public class ClientMainThread {
 
 							ServerAttributes found_actual__server = new ServerAttributes(
 									receivePacket.getAddress().getHostAddress(), server_name, server_user_count);
-//							System.out.println("FOUND_SERVER: "+found_actual__server);
 							boolean new_server = true;
 							for (int i = 0; i < serverList.size(); i++) {
 								if (found_actual__server.getIP().equals(serverList.get(i).getIP())) {
@@ -444,7 +434,6 @@ public class ClientMainThread {
 							if (new_server) {
 								serverList.add(found_actual__server);
 								setServerlist(serverList);
-//								System.out.println("ADDING SERVER: "+serverList);
 							}
 							pongFrame.getMultiPlayer().getJoinServerPanel().setServerList(serverList);
 						} // ENDE-SCHLEIFE
@@ -454,8 +443,7 @@ public class ClientMainThread {
 					} catch (SocketTimeoutException e) {
 
 						if (pongFrame.isShowClientNetworkInformation())
-							appendTextMessages(
-									getClass().getName() + ">>> Got no reply - No Server found!",
+							appendTextMessages(getClass().getName() + ">>> Got no reply - No Server found!",
 									pongFrame.getClientChat().LEVEL_INFO);
 
 					} catch (IOException ex) {
@@ -465,21 +453,11 @@ public class ClientMainThread {
 					}
 				}
 				try {
-					Thread.sleep(10); //TODO: Sind 10ms die effizienteste Wartezeit?
+					Thread.sleep(10); // TODO: Sind 10ms die effizienteste Wartezeit?
 				} catch (InterruptedException e) {
 					appendTextMessages(e.getMessage(), pongFrame.getClientChat().LEVEL_ERROR);
 				}
 			}
 		}
-
-//		public static ServerSearcherThread getServerSearcherThreadInstance() {
-//
-//			return ServerSearcherThreadHolder.INSTANCE;
-//		}
-//
-//		private static class ServerSearcherThreadHolder {
-//
-//			private static final ServerSearcherThread INSTANCE = new ServerSearcherThread();
-//		}
 	}
 }

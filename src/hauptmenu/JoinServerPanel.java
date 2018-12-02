@@ -9,7 +9,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 
-import javax.swing.ImageIcon;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.SwingConstants;
@@ -21,7 +20,6 @@ import gui.MenuButton;
 import gui.MenuLabel;
 import gui.MenuTextField;
 import multiplayer.server.ServerAttributes;
-import pongtoolkit.ImageLoader;
 
 public class JoinServerPanel extends JPanel implements ActionListener{
 
@@ -31,28 +29,14 @@ public class JoinServerPanel extends JPanel implements ActionListener{
 	private static final long serialVersionUID = -1809224404389227045L;
 	private JPanel contentPane, namePanel;
 	private MenuTextField textField;
-	// private JTable table;
-	// private JTableHeader th;
-	// private ArrayList<MenuButton> connectButtons;
-	// private MenuButton skipBack;
-	// private ShadowLabel nameLabel, lblServerliste;
 	private MenuLabel nameLabel;
 	private MenuLabel nameAlreadyTaken;
 	private JPanel reloadPanel;
 	private MenuButton reloadButton;
-	// private ActionListener action = new Action();
-
-	// All Components for Manual Server Table List
 	private JPanel serverListPanel, serverListTitlePanel;
-	// private ShadowLabel serverNameTitle, serverIpAdressTitle,
-	// serverUserCountTitle, serverJoinTitle;
 	private MenuLabel serverNameTitle, serverIpAdressTitle, serverUserCountTitle, serverJoinTitle;
-//	private ArrayList<MenuTextField> serverNameTextFields, serverIpAdressTextFields, ServerUserCountTextFields;
 	private ArrayList<MenuButton> serverJoinButtons;
 	private JScrollPane scrollPane;
-	// private ModernScrollPane scrollPane;
-//	private Thread t = new Thread(new ReloadServerListThread());
-	private ImageIcon lanIcon = ImageLoader.loadIcon("lan_icon.png", 40, 40);
 
 	public final int CLIENT_ACCEPTED = -1;
 	public final int NAME_ALREADY_IN_USE = 0;
@@ -113,9 +97,6 @@ public class JoinServerPanel extends JPanel implements ActionListener{
 		namePanel.add(nameAlreadyTaken);
 
 		serverList = new ArrayList<ServerAttributes>();
-//		serverNameTextFields = new ArrayList<MenuTextField>();
-//		serverIpAdressTextFields = new ArrayList<MenuTextField>();
-//		ServerUserCountTextFields = new ArrayList<MenuTextField>();
 		serverJoinButtons = new ArrayList<MenuButton>();
 
 		reloadPanel = new JPanel();
@@ -506,15 +487,7 @@ public class JoinServerPanel extends JPanel implements ActionListener{
 		if(e.getSource().equals(reloadButton)) {
 			
 			Component[] comps = serverListPanel.getComponents();
-//			Component[] titleComps = serverListTitlePanel.getComponents();
 			for(int i = 0; i < comps.length; i++) {
-//				boolean title = false;
-//				for(int j = 0; j < titleComps.length; j++) {
-//					if(comps[i].equals(titleComps[j])) {
-//						  title = true;
-//					}
-//				}
-//				if(!title)
 					serverListPanel.remove(comps[i]);
 			}
 			
@@ -531,30 +504,22 @@ public class JoinServerPanel extends JPanel implements ActionListener{
 	
 	private void addLine(int ID, int size, ServerAttributes sa, ArrayList<ServerAttributes> serverList,
 			int nameTextFieldWidth, int ipTextFieldWidth, int userCountTextFieldWidth, int joinButtonWidth) {
-		// System.out.println(sa);
 		System.out.println("\n\n\nADDING LINE{" + sa.getName() + "}\n\n\n");
 		MenuTextField tempTextField = new MenuTextField(pongFrame, sa.getName());
 		tempTextField.setEditable(false);
 		tempTextField.setSize(new Dimension(nameTextFieldWidth, size));
-		// System.out.print("1");
 		MenuTextField tempIpAdressTextField = new MenuTextField(pongFrame, sa.getIP());
 		tempIpAdressTextField.setToolTipText("Server-IP-Adresse");
 		tempIpAdressTextField.setSize(new Dimension(ipTextFieldWidth, size));
-		// tempIpAdressTextField.setLocation(402, ID*size+size);
 		tempIpAdressTextField.setEditable(false);
-		// System.out.print("2");
 		MenuTextField tempUserCountTextField = new MenuTextField(pongFrame, sa.getUser_count());
 		tempUserCountTextField.setToolTipText("Anzahl der Spieler auf dem Server");
 		tempUserCountTextField.setSize(new Dimension(userCountTextFieldWidth, size));
-		// tempUserCountTextField.setLocation(453, ID*size +size);
 		tempUserCountTextField.setEditable(false);
-		// System.out.print("3");
 		MenuButton tempJoinServerButton = new MenuButton(pongFrame, "Verbinden"); // Server join Button noch nicht
 																					// vorhanden
-		// tempJoinServerButton.setIcon(lanIcon);
 		tempJoinServerButton.setToolTipText("Mit dem Server verbinden");
 		tempJoinServerButton.setSize(new Dimension(joinButtonWidth, size));
-		// tempJoinServerButton.setLocation(453, ID*size +size);
 		tempJoinServerButton.addActionListener(new ActionListener() {
 
 			public void actionPerformed(ActionEvent e) {
@@ -573,23 +538,11 @@ public class JoinServerPanel extends JPanel implements ActionListener{
 				}
 			}
 		});
-		// System.out.print("4\n\n\n");
-		// System.out.println("COMPONENTS CREATED\n\n");
-
 		serverListPanel.add(tempTextField);
 		serverListPanel.add(tempIpAdressTextField);
 		serverListPanel.add(tempUserCountTextField);
 		serverListPanel.add(tempJoinServerButton);
 
-//		serverIpAdressTextFields.add(tempIpAdressTextField);
-//		ServerUserCountTextFields.add(tempUserCountTextField);
 		serverJoinButtons.add(tempJoinServerButton);
-		
-//		serverNameTextFields.add(tempTextField);
-		// System.out.println("COMPONENTS ADDED TO LIST\n\n");
-
-		// System.out.println(Arrays.asList(serverListPanel.getComponents())+"
-		// changed\n\n\n");
 	}
-
 }

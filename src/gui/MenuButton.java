@@ -7,7 +7,6 @@ import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Insets;
-import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.font.FontRenderContext;
@@ -30,13 +29,10 @@ public class MenuButton extends JButton {
 	private Color pressedBackgroundColor;
 	private String text;
 	private boolean autoResizeFont = false, firstTime = true;
-	private PongFrame pongFrame;
 
 	public MenuButton(PongFrame pongFrame, String text) {
 		this.text = text;
-		this.pongFrame = pongFrame;
 		this.setText(text);
-//		Dimension size = new Dimension(Math.round(this.size.width*pongFrame.getASPECT_RATIO()), Math.round(this.size.height*pongFrame.getASPECT_RATIO()));
 		this.setSize(size);
 		this.setRolloverEnabled(true);
 		this.setForeground(Color.white);
@@ -47,14 +43,13 @@ public class MenuButton extends JButton {
 		setPressedBackgroundColor(Color.white);
 
 		this.setFont(pongFrame.getGLOBAL_FONT().deriveFont(1, getWidth() * getHeight() / 3000 + 10));
-//		System.out.println(text + ": " + this.getFont().getSize());
 		this.setAutoFontSize(true);
-//		this.getSize();
 	}
 
 	public void setText(String text) {
 		this.text = text;
 	}
+
 	public void setSize(Dimension size) {
 		super.setSize(size);
 		setMinimumSize(size);
@@ -62,52 +57,7 @@ public class MenuButton extends JButton {
 		setPreferredSize(size);
 		setBackgroundSize(size);
 	}
-//	public void setSize(Dimension size) {
-////		System.out.print("[MenuPanel]Called setSize (width,height): "+width+","+height+" : ");
-//		if(size.width<pongFrame.getGraphicResolution().width && size.height < pongFrame.getGraphicResolution().height) {
-//		size.width = Math.round(size.width*pongFrame.getASPECT_RATIO());
-//		size.height = Math.round(size.height*pongFrame.getASPECT_RATIO());
-////		System.out.println(+width+","+height+" set?");
-//		size = new Dimension(size.width, size.height);
-//		}
-//		this.setMinimumSize(size);
-//		this.setMaximumSize(size);
-//		this.setPreferredSize(size);
-//		super.setSize(size.width, size.height);
-////		System.out.println("getSize: "+getSize()+" setSize: "+width+","+height);
-//	}
-//	public void setSize(int width, int height) {
-////		System.out.print("Called setSize (width,height): "+width+","+height+" : ");
-//		Dimension size = new Dimension(width, height);
-//		if(width<pongFrame.getGraphicResolution().width && height < pongFrame.getGraphicResolution().height) {
-//		width = Math.round(width*pongFrame.getASPECT_RATIO());
-//		height = Math.round(height*pongFrame.getASPECT_RATIO());
-////		System.out.println(+width+","+height+" set?");
-//		size = new Dimension(width, height);
-//		}
-//		this.setMinimumSize(size);
-//		this.setMaximumSize(size);
-//		this.setPreferredSize(size);
-//		super.setSize(width, height);
-////		System.out.println("getSize: "+getSize()+" setSize: "+width+","+height);
-//	}	
-//	public void setBounds(int x, int y, int width, int height) {
-//		x = Math.round(x*pongFrame.getASPECT_RATIO());
-//		x = Math.round(y*pongFrame.getASPECT_RATIO());
-//		width = Math.round(width*pongFrame.getASPECT_RATIO());
-//		height = Math.round(height*pongFrame.getASPECT_RATIO());
-//		super.setBounds(x, y, width, height);
-//	}
-//	public void setLocation(Point p) {
-//		p.x = Math.round(p.x*pongFrame.getASPECT_RATIO());
-//		p.y = Math.round(p.y*pongFrame.getASPECT_RATIO());
-//		super.setLocation(p);
-//	}
-//	public void setLocation(int x, int y) {
-//		x = Math.round(x*pongFrame.getASPECT_RATIO());
-//		y = Math.round(y*pongFrame.getASPECT_RATIO());
-//		super.setLocation(x,y);
-//	}
+
 	public void setBackgroundSize(Dimension size) {
 		this.backgroundSize = size;
 	}
@@ -160,7 +110,7 @@ public class MenuButton extends JButton {
 			temp.setSize(backgroundSize);
 			temp.setBorder(new EmptyBorder(5, 5, 5, 5));
 			float size = getMaxFontSizeForControl(temp, text, g, this.getFont());
-			tempFont = tempFont.deriveFont(size);
+			tempFont = tempFont.deriveFont(size - 2);
 			this.setFont(tempFont);
 
 		} else {
