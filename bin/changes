@@ -1,0 +1,7 @@
+Visible Changes 3.12.18
+
+*Toggle-Switch Button in der Level-Selection hinzugefügt, mit welchem der User entscheiden kann, ob er den linken oder den rechten Slider steuern möchte.
+*Steuern des Sliders im Einzelspieler-Modus(Kein KOOP) ist nun per WASD, sowie über die Pfeiltasten Möglich(Nur Vertikal versteht sich).
+*Umsetzung der Schwierigkeitsgrade angepasst: Einfach ist nun noch einfacher, und Schwer ist so gut wie unmöglich.
+*Level Selection Buttons in ein Grid-Layout geändert. 
+*KOOP-Button schonmal hinzugefügt in der Level-Selection

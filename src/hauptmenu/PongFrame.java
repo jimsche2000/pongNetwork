@@ -88,8 +88,8 @@ public class PongFrame extends JFrame {
 
 		// hammer wichtig
 //		Dimension fullScreenSize = new Dimension(1920, 1080); //for testing on different resolutions
-//		Dimension fullScreenSize = new Dimension(1680, 1050); //for testing on different resolutions
-		Dimension fullScreenSize = Toolkit.getDefaultToolkit().getScreenSize();
+		Dimension fullScreenSize = new Dimension(1680, 1050); // for testing on different resolutions
+//		Dimension fullScreenSize = Toolkit.getDefaultToolkit().getScreenSize();
 //		int gcd = gcd(fullScreenSize.width, fullScreenSize.height); //greatest common divisor // größter gemeinsamer teiler
 //		int har = fullScreenSize.width / gcd; // horizontal aspect ratio
 //		int var = fullScreenSize.height / gcd; //vertical aspect ratio
@@ -215,6 +215,7 @@ public class PongFrame extends JFrame {
 		case LEVEL_SELECTION:
 			ACTIVE_PANEL = this.LEVEL_SELECTION;
 			cl.show(componentPanel, "levelSelection");
+			levelSelection.repaint();
 			break;
 		case CREDITS:
 			ACTIVE_PANEL = this.CREDITS;
@@ -236,11 +237,14 @@ public class PongFrame extends JFrame {
 		case SINGLEPLAYER:
 			ACTIVE_PANEL = this.SINGLEPLAYER;
 			cl.show(componentPanel, "singleplayer");
+//			singleplayer.repaint();
 			// Der richtige Modus wird von der LevelSelection direkt an Game übergeben
 			break;
 		default:
 			break;
 		}
+//		repaint();
+
 	}
 
 	private void setConsoleToPanel(int ID) {

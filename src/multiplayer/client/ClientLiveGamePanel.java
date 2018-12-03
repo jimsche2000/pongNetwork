@@ -1,12 +1,10 @@
 package multiplayer.client;
 
 import java.awt.BorderLayout;
-import java.awt.Dimension;
 import javax.swing.JPanel;
 
 import game.MultiPlayerMatchField;
 import hauptmenu.PongFrame;
-import main.PongMain;
 
 /*
  * ClientLiveGamePanel
@@ -20,22 +18,19 @@ public class ClientLiveGamePanel extends JPanel {
 	private static JPanel contentPane = new JPanel();
 	private MultiPlayerMatchField spielfeld;
 
-
 	private PongFrame pongFrame;
-	
+
 	public ClientLiveGamePanel(PongFrame pongFrame) {
 		this.pongFrame = pongFrame;
 		this.setSize(pongFrame.getSize());
 		this.setLayout(null);
 		contentPane.setSize(pongFrame.getSize());
 		contentPane.setLayout(null);
-		
+
 		spielfeld = new MultiPlayerMatchField(pongFrame);
 		spielfeld.configSF(spielfeld.SPECTATOR);
-		
+
 		contentPane.add(spielfeld);
-//		contentPane.setOpaque(false);
-//		this.setOpaque(false);
 		this.add(contentPane);
 	}
 
@@ -45,7 +40,8 @@ public class ClientLiveGamePanel extends JPanel {
 		} else {
 			contentPane.remove(pongFrame.getClientChat());
 		}
-	}	
+	}
+
 	public MultiPlayerMatchField getSpielfeld() {
 		return spielfeld;
 	}

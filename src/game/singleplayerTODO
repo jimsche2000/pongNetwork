@@ -1,9 +1,6 @@
 Local-Game/Singleplayer IDEAS:
 
--In der Level-Selection ein kippschalter ob man der linke oder der rechte Spieler sein will, und bei klick auf einen der buttons, das an game.Game übergeben
 -KOOP-Modus, namen eingeben etc
 -Turnier Modus für SinglePlayer
--Code aufräumen
 -Buggs beseitigen(Buggs: Ungenaue Kollision am Schläger, Ball buggt manchmal, wenn er den Schläger von unten berührt. Dann müsste der Ball nach unten und trotzdem ins Tor gehen, er buggt aber zurück ins Spielfeld), 
--Ball und Schläger brauchen einerseits eine Panel/Label abgeleitete Klasse, andererseits aber auch eine Klasse, die nur position, größe (und geschwindigkeit?) speichert. So wäre physik und grafik getrennt: Die physik wäre genauer möglich, während die grafik perfekt auf die Auflösung gerendert werden könnte!
 -Die verschiedenen Abprallwinkel mithilfe EINER Formel anstatt 10 abfragen lösen
