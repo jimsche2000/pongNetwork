@@ -88,8 +88,8 @@ public class PongFrame extends JFrame {
 
 		// hammer wichtig
 //		Dimension fullScreenSize = new Dimension(1920, 1080); //for testing on different resolutions
-		Dimension fullScreenSize = new Dimension(1680, 1050); // for testing on different resolutions
-//		Dimension fullScreenSize = Toolkit.getDefaultToolkit().getScreenSize();
+//		Dimension fullScreenSize = new Dimension(1680, 1050); // for testing on different resolutions
+		Dimension fullScreenSize = Toolkit.getDefaultToolkit().getScreenSize();
 //		int gcd = gcd(fullScreenSize.width, fullScreenSize.height); //greatest common divisor // größter gemeinsamer teiler
 //		int har = fullScreenSize.width / gcd; // horizontal aspect ratio
 //		int var = fullScreenSize.height / gcd; //vertical aspect ratio
