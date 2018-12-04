@@ -269,7 +269,7 @@ public class SinglePlayer extends JPanel implements KeyListener {
 		}
 		centerPhysicObjects(true);
 
-		maxPunkte = 1;//10
+		maxPunkte = 10;
 		scoreLinks = 0;
 		scoreRechts = 0;
 		// änderung der Startrichtung des balles
