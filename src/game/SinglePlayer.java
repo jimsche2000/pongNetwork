@@ -13,12 +13,15 @@ import java.awt.event.KeyListener;
 import java.awt.image.MemoryImageSource;
 import java.util.Timer;
 import java.util.TimerTask;
+
+import javax.swing.BorderFactory;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 
 import gui.MenuLabel;
-import pause.*;
 import hauptmenu.PongFrame;
+import pause.PauseAction;
 
 @SuppressWarnings("serial")
 public class SinglePlayer extends JPanel implements KeyListener {
@@ -34,6 +37,7 @@ public class SinglePlayer extends JPanel implements KeyListener {
 	private MenuLabel winner;
 	private MenuLabel scoreLabel;
 	private MenuLabel countdown;
+	private JLabel playerLeftLabel, playerRightLabel;
 	private Timer timer = new Timer();
 
 	// Variables (Normal Datatypes)
@@ -121,22 +125,40 @@ public class SinglePlayer extends JPanel implements KeyListener {
 		winner = new MenuLabel(frame, "");
 		scoreLabel = new MenuLabel(frame, "");
 		countdown = new MenuLabel(frame, "");
+		playerLeftLabel = new JLabel("Spieler Links");
+		playerRightLabel = new JLabel("Spieler Rechts");
 		// SetBounds(X,Y,WIDTH,HEIGHT);
-		winner.setBounds(Math.round(450 * pongFrame.getASPECT_RATIO()), Math.round(900 * pongFrame.getASPECT_RATIO()),
-				Math.round(1000 * pongFrame.getASPECT_RATIO()), Math.round(100 * pongFrame.getASPECT_RATIO()));
-		winner.setFont(pongFrame.getGLOBAL_FONT().deriveFont(50 * pongFrame.getASPECT_RATIO()));
+		winner.setBounds(Math.round(260 * pongFrame.getASPECT_RATIO()), Math.round(900 * pongFrame.getASPECT_RATIO()),
+				Math.round(1400 * pongFrame.getASPECT_RATIO()), Math.round(100 * pongFrame.getASPECT_RATIO()));
+		winner.setFont(pongFrame.getGLOBAL_FONT().deriveFont(40 * pongFrame.getASPECT_RATIO()));
 		winner.setOpaque(false);
 		scoreLabel.setBounds(0, Math.round(10 * pongFrame.getASPECT_RATIO()), preferredSize.width,
 				Math.round(50 * pongFrame.getASPECT_RATIO()));
-		scoreLabel.setFont(pongFrame.getGLOBAL_FONT().deriveFont(30 * pongFrame.getASPECT_RATIO()));
+		scoreLabel.setFont(pongFrame.getGLOBAL_FONT().deriveFont(50 * pongFrame.getASPECT_RATIO()));
 		scoreLabel.setOpaque(false);
 		countdown.setBounds(Math.round(600 * pongFrame.getASPECT_RATIO()), // X
 				Math.round(100 * pongFrame.getASPECT_RATIO()), // Y
 				Math.round(750 * pongFrame.getASPECT_RATIO()), // WIDTH
 				Math.round(300 * pongFrame.getASPECT_RATIO()));// HEIGHT
-		countdown.setFont(pongFrame.getGLOBAL_FONT().deriveFont(150 * pongFrame.getASPECT_RATIO()));
+		countdown.setFont(pongFrame.getGLOBAL_FONT().deriveFont(100 * pongFrame.getASPECT_RATIO()));
 		countdown.setHorizontalAlignment(SwingConstants.CENTER);
 		countdown.setOpaque(false);
+		
+		playerLeftLabel.setBounds(Math.round(75*pongFrame.getASPECT_RATIO()), 0, Math.round(500*pongFrame.getASPECT_RATIO()), Math.round(100*pongFrame.getASPECT_RATIO()));
+		playerLeftLabel.setFont(pongFrame.getGLOBAL_FONT().deriveFont(25*pongFrame.getASPECT_RATIO()));
+		playerLeftLabel.setHorizontalAlignment(SwingConstants.LEFT);
+		playerLeftLabel.setVerticalAlignment(SwingConstants.TOP);
+		playerLeftLabel.setBorder(BorderFactory.createEmptyBorder(Math.round(10*pongFrame.getASPECT_RATIO()), 0,0,0));
+		playerLeftLabel.setForeground(Color.black);
+		playerLeftLabel.setOpaque(false);
+		playerRightLabel.setBounds(Math.round((1920 - 575)*pongFrame.getASPECT_RATIO()), 0, Math.round(500*pongFrame.getASPECT_RATIO()), Math.round(100*pongFrame.getASPECT_RATIO()));
+		playerRightLabel.setFont(pongFrame.getGLOBAL_FONT().deriveFont(25*pongFrame.getASPECT_RATIO()));
+		playerRightLabel.setHorizontalAlignment(SwingConstants.RIGHT);
+		playerRightLabel.setVerticalAlignment(SwingConstants.TOP);
+		playerRightLabel.setBorder(BorderFactory.createEmptyBorder(Math.round(10*pongFrame.getASPECT_RATIO()), 0,0,0));
+		playerRightLabel.setForeground(Color.black);
+		playerRightLabel.setOpaque(false);
+		
 		contentPane = new JPanel();
 		contentPane.setLocation(0, (pongFrame.getWindowResolution().height - preferredSize.height) / 2);
 		contentPane.setSize(preferredSize);
@@ -146,6 +168,8 @@ public class SinglePlayer extends JPanel implements KeyListener {
 		contentPane.add(winner);
 		contentPane.add(scoreLabel);
 		contentPane.add(countdown);
+		contentPane.add(playerLeftLabel);
+		contentPane.add(playerRightLabel);
 		contentPane.add(ball);
 		contentPane.add(sLinks);
 		contentPane.add(sRechts);
@@ -166,6 +190,10 @@ public class SinglePlayer extends JPanel implements KeyListener {
 		this.setCursor(transparentCursor);
 	}
 
+	public void setNameLabel(String leftName, String rightName) {
+		playerLeftLabel.setText(leftName);
+		playerRightLabel.setText(rightName);		
+	}
 	private void centerPhysicObjects(boolean graphics) { // Center Ball and 2 Player
 		centerBall();
 		physicData.setPlayerOneLocation(50, (1080 - physicData.getPlayerOneHeight()) / 2);
@@ -201,8 +229,8 @@ public class SinglePlayer extends JPanel implements KeyListener {
 		weitex1 = 10 * factor; //
 		weitey2 = 5 * factor; //
 		weitex2 = 7 * factor; //// TODO: EINE MENGE SPIELRAUM FÜR SCHWIERIGKEITSGRADE, SCHMETTERBÄLLE ETC
-		weitey3 = 5 * factor; //
-		weitex3 = 5 * factor; //
+		weitey3 = 6 * factor; //
+		weitex3 = 6 * factor; //
 		boostStep = 0.1f * factor;
 	}
 
@@ -214,7 +242,7 @@ public class SinglePlayer extends JPanel implements KeyListener {
 
 		if (difficulty == this.EASY_MODE) {
 			this.botFailFactor = 0.3f;
-			botSpeed = 8; // geschwindigkeit des bots
+			botSpeed = 5; // geschwindigkeit des bots
 			erfassungsbereichRechterBot = 1200; // umso höher umso kleiner der bereich
 			erfassungsbereichLinkerBot = 600;
 			setBallSpeed(0.7f);
@@ -241,7 +269,7 @@ public class SinglePlayer extends JPanel implements KeyListener {
 		}
 		centerPhysicObjects(true);
 
-		maxPunkte = 10;
+		maxPunkte = 1;//10
 		scoreLinks = 0;
 		scoreRechts = 0;
 		// änderung der Startrichtung des balles
@@ -260,6 +288,7 @@ public class SinglePlayer extends JPanel implements KeyListener {
 
 			// Hat jemand gewonnen?
 			if (scoreLinks == maxPunkte) {
+				countdown(5);
 				timer.schedule(new TimerTask() {
 					public void run() {
 						stopGame();
@@ -267,8 +296,10 @@ public class SinglePlayer extends JPanel implements KeyListener {
 						pongFrame.showPane(pongFrame.LEVEL_SELECTION);
 					}
 				}, 5000);
-				winner.setText("Linker Spieler hat mit " + scoreLinks + ":" + scoreRechts + " Gewonnen");
+				
+				winner.setText(playerLeftLabel.getText()+" hat mit " + scoreLinks + ":" + scoreRechts + " Gewonnen");
 			} else if (scoreRechts == maxPunkte) {
+				countdown(5);
 				timer.schedule(new TimerTask() {
 					public void run() {
 						stopGame();
@@ -276,7 +307,7 @@ public class SinglePlayer extends JPanel implements KeyListener {
 						pongFrame.showPane(pongFrame.LEVEL_SELECTION);
 					}
 				}, 5000);
-				winner.setText("Rechter Spieler hat mit " + scoreRechts + ":" + scoreLinks + " Gewonnen");
+				winner.setText(playerRightLabel.getText()+" hat mit " + scoreRechts + ":" + scoreLinks + " Gewonnen");
 			}
 
 			// Hat noch keiner gewonnen?
@@ -286,8 +317,18 @@ public class SinglePlayer extends JPanel implements KeyListener {
 						boostSpeed = 0;
 						kl = false;
 						kr = false;
-						weitex = 5;
-						weitey = 5;
+						if(MODE==EASY_MODE) {
+							weitex = 6 * 0.75f;
+							weitey = 6 * 0.75f;
+							
+						}else if(MODE == HARD_MODE) {
+							weitex = 6 * 1.25f;
+							weitey = 6 * 1.25f;
+							
+						}else {
+							weitex = 6;
+							weitey = 6;
+						}
 						centerBall();
 						startGame();
 					}
@@ -353,9 +394,13 @@ public class SinglePlayer extends JPanel implements KeyListener {
 		if (activated) {// left = player
 			isLeftPlayerBot = true;
 			isRightPlayerBot = false;
+			playerLeftLabel.setText("Linker Bot");
+			playerRightLabel.setText("Rechter Spieler");
 		} else {
 			isLeftPlayerBot = false;
 			isRightPlayerBot = true;
+			playerLeftLabel.setText("Linker Spieler");
+			playerRightLabel.setText("Rechter Bot");
 		}
 	}
 
@@ -965,8 +1010,10 @@ public class SinglePlayer extends JPanel implements KeyListener {
 					pauseAction.getPausePanel().resume();
 					continueGame();
 				} else {
-					pauseGame();
-					pauseAction.action();
+					if(winner.getText().equals("")) {//Damit die Pause Taste nicht gedrückt werden kann, während das Spiel vorbei ist
+						pauseGame();
+						pauseAction.action();
+					}
 				}
 			}
 		}

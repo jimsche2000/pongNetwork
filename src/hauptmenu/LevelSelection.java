@@ -14,7 +14,9 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 
+import gui.JTextFieldCharLimit;
 import gui.MenuButton;
+import gui.MenuTextField;
 import gui.MenuToggleSwitchButton;
 import pongtoolkit.ImageLoader;
 
@@ -25,11 +27,13 @@ public class LevelSelection extends JPanel implements ActionListener {
 	 */
 	private static final long serialVersionUID = 1554442548630233138L;
 	private MenuButton returnToMainMenu, playEasy, playMiddle, playHard, playCustom, playKOOP;
+	private MenuTextField leftName, rightName;
 	private JLabel title, downTitle;
 	private ImageIcon background;
 	private JLabel backgroundLabel;
 	private MenuToggleSwitchButton toggleSwitch;
 	private PongFrame pongFrame;
+	private String RIGHT_BOT = "Rechter Bot", LEFT_BOT = "Linker Bot";
 
 	public LevelSelection(PongFrame pongFrame) {
 		this.pongFrame = pongFrame;
@@ -68,17 +72,28 @@ public class LevelSelection extends JPanel implements ActionListener {
 		leftOrRightPlayer.setPreferredSize(new Dimension(Math.round(1920 * pongFrame.getASPECT_RATIO()),
 				Math.round(100 * pongFrame.getASPECT_RATIO())));
 
-		JLabel left = new JLabel("Linker Spieler"), right = new JLabel("Rechter Spieler");
-		left.setForeground(Color.black);
-		left.setFont(pongFrame.getGLOBAL_FONT().deriveFont(20.0f * pongFrame.getASPECT_RATIO()));
-		right.setForeground(Color.black);
-		right.setFont(pongFrame.getGLOBAL_FONT().deriveFont(20.0f * pongFrame.getASPECT_RATIO()));
+		leftName = new MenuTextField(pongFrame,"Spieler");
+		leftName.setFont(pongFrame.getGLOBAL_FONT().deriveFont(20.0f * pongFrame.getASPECT_RATIO()));
+		leftName.setSize(new Dimension(Math.round(300*pongFrame.getASPECT_RATIO()), Math.round(50*pongFrame.getASPECT_RATIO())));
+		leftName.setDocument(new JTextFieldCharLimit(14));
+		leftName.setText("Spieler");
+		rightName = new MenuTextField(pongFrame,RIGHT_BOT);
+		rightName.setFont(pongFrame.getGLOBAL_FONT().deriveFont(20.0f * pongFrame.getASPECT_RATIO()));
+		rightName.setSize(new Dimension(Math.round(300*pongFrame.getASPECT_RATIO()), Math.round(50*pongFrame.getASPECT_RATIO())));
+		rightName.setDocument(new JTextFieldCharLimit(14));
+		rightName.setText(RIGHT_BOT);
+		rightName.setEditable(false);
+//		JLabel left = new JLabel("Linker Spieler"), right = new JLabel("Rechter Spieler");
+//		left.setForeground(Color.black);
+//		left.setFont(pongFrame.getGLOBAL_FONT().deriveFont(20.0f * pongFrame.getASPECT_RATIO()));
+//		right.setForeground(Color.black);
+//		right.setFont(pongFrame.getGLOBAL_FONT().deriveFont(20.0f * pongFrame.getASPECT_RATIO()));
 
 		toggleSwitch = new MenuToggleSwitchButton(pongFrame, Math.round(100 * pongFrame.getASPECT_RATIO()),
 				Math.round(50 * pongFrame.getASPECT_RATIO()));
-		leftOrRightPlayer.add(left);
+		leftOrRightPlayer.add(leftName);
 		leftOrRightPlayer.add(toggleSwitch);
-		leftOrRightPlayer.add(right);
+		leftOrRightPlayer.add(rightName);
 
 		backgroundLabel.add(leftOrRightPlayer);
 
@@ -121,7 +136,20 @@ public class LevelSelection extends JPanel implements ActionListener {
 		this.setBackground(Color.black);
 		this.add(backgroundLabel, BorderLayout.CENTER);
 	}
-
+	//FÜR KOOP: BEIDE EDITABLE, FARBE VOM TOGGLESWITCH IN KOMPLETT GRÜN ÄNDERN, KOOP BUTTON ALS CHECKBOX
+	public void changeTextFields() {
+		if(rightName.getText().equals(RIGHT_BOT)) {
+			rightName.setText(leftName.getText());
+			rightName.setEditable(true);
+			leftName.setText(LEFT_BOT);
+			leftName.setEditable(false);
+		}else if(leftName.getText().equals(LEFT_BOT)) {
+			leftName.setText(rightName.getText());
+			leftName.setEditable(true);
+			rightName.setText(RIGHT_BOT);
+			rightName.setEditable(false);
+		}
+	}
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		if (e.getSource().equals(returnToMainMenu)) {
@@ -129,6 +157,7 @@ public class LevelSelection extends JPanel implements ActionListener {
 			pongFrame.showPane(pongFrame.MAIN_MENU);
 		} else {
 			pongFrame.getSinglePlayer().setPlayerLeftRight(toggleSwitch.isActivated());
+			pongFrame.getSinglePlayer().setNameLabel(leftName.getText(),rightName.getText());
 			if (e.getSource().equals(playEasy)) {
 				pongFrame.getSinglePlayer().restartGame(pongFrame.getSinglePlayer().EASY_MODE);
 				pongFrame.showPane(pongFrame.SINGLEPLAYER);

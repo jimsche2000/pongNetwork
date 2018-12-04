@@ -31,6 +31,9 @@ public class MenuToggleSwitchButton extends JPanel {
 		addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent arg0) {
+				if(pongFrame.getACTIVE_PANEL()==pongFrame.LEVEL_SELECTION) {
+					pongFrame.getLevelSelection().changeTextFields();
+				}
 				activated = !activated;
 				repaint();
 			}
@@ -55,16 +58,17 @@ public class MenuToggleSwitchButton extends JPanel {
 
 	@Override
 	public void paint(Graphics gr) {
+		int roundness = Math.round(5 * pongFrame.getASPECT_RATIO());
+		int fourty = Math.round((getWidth() - 1));
+		int twenty = Math.round((getHeight() - 1));
+		int eighteen = Math.round((getHeight())) - 1;
 		if (g == null) {
 			puffer = (BufferedImage) createImage(getWidth(), getHeight());
 			g = (Graphics2D) puffer.getGraphics();
 			RenderingHints rh = new RenderingHints(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 			g.setRenderingHints(rh);
 		}
-		int roundness = Math.round(5 * pongFrame.getASPECT_RATIO());
-		int fourty = Math.round((getWidth() - 1));
-		int twenty = Math.round((getHeight() - 1));
-		int eighteen = Math.round((getHeight())) - 1;
+
 		g.setColor(switchColor); // Hintergrund
 		g.fillRoundRect(0, 0, fourty, twenty, roundness, roundness);
 		g.setColor(borderColor); // Rahmen

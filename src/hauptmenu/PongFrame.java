@@ -399,6 +399,14 @@ public class PongFrame extends JFrame {
 		this.singleplayer = singleplayer;
 	}
 
+	public LevelSelection getLevelSelection() {
+		return levelSelection;
+	}
+
+	public void setLevelSelection(LevelSelection levelSelection) {
+		this.levelSelection = levelSelection;
+	}
+
 	public float getASPECT_RATIO() {
 		return ASPECT_RATIO;
 	}

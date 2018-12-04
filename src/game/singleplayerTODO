@@ -4,3 +4,4 @@ Local-Game/Singleplayer IDEAS:
 -Turnier Modus für SinglePlayer
 -Buggs beseitigen(Buggs: Ungenaue Kollision am Schläger, Ball buggt manchmal, wenn er den Schläger von unten berührt. Dann müsste der Ball nach unten und trotzdem ins Tor gehen, er buggt aber zurück ins Spielfeld), 
 -Die verschiedenen Abprallwinkel mithilfe EINER Formel anstatt 10 abfragen lösen
+-Jede Aktion der Spieler sammeln und auswerten: zB. wenn Spieler links 5 mal hintereinander jedes mal nen schmetterball gemacht hat, und dann nochmal extra speed o.ä.
