@@ -136,7 +136,7 @@ public class PongFrame extends JFrame {
 		levelSelection = new LevelSelection(this);
 		levelSelection.setAlignmentX(SwingConstants.CENTER);
 		levelSelection.setAlignmentY(SwingConstants.CENTER);
-
+		
 		credits = new Credits(this);
 		credits.setAlignmentX(SwingConstants.CENTER);
 		credits.setAlignmentY(SwingConstants.CENTER);
@@ -215,7 +215,7 @@ public class PongFrame extends JFrame {
 		case LEVEL_SELECTION:
 			ACTIVE_PANEL = this.LEVEL_SELECTION;
 			cl.show(componentPanel, "levelSelection");
-			levelSelection.repaint();
+//			levelSelection.repaint();
 			break;
 		case CREDITS:
 			ACTIVE_PANEL = this.CREDITS;

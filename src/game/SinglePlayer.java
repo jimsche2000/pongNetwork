@@ -276,6 +276,7 @@ public class SinglePlayer extends JPanel implements KeyListener {
 		x1 = false;
 		y1 = false;
 	}
+	
 
 	// stoppt den thread und setzt den ball zurück und wartet 3 Sekunden bis er
 	// wieder startet
@@ -382,6 +383,15 @@ public class SinglePlayer extends JPanel implements KeyListener {
 		startGame();
 		spielGestartet = false;
 	}
+	public void restartGame(int difficulty, boolean leftPlayerBot, boolean rightPlayerBot) {
+		configureGame(difficulty);
+		countdown(3);
+		pauseMenu = false;
+		startGame();
+		spielGestartet = false;
+		this.isLeftPlayerBot = leftPlayerBot;
+		this.isRightPlayerBot = rightPlayerBot;
+	}
 
 	public void stopGame() {
 		configureGame(MODE);
@@ -390,17 +400,12 @@ public class SinglePlayer extends JPanel implements KeyListener {
 	}
 
 	public void setPlayerLeftRight(boolean activated) {
-//		System.out.println("SET_PLAYER: " + activated + " TRUE MEANS RIGHT, FALSE MEANS LEFT");
 		if (activated) {// left = player
 			isLeftPlayerBot = true;
 			isRightPlayerBot = false;
-			playerLeftLabel.setText("Linker Bot");
-			playerRightLabel.setText("Rechter Spieler");
 		} else {
 			isLeftPlayerBot = false;
 			isRightPlayerBot = true;
-			playerLeftLabel.setText("Linker Spieler");
-			playerRightLabel.setText("Rechter Bot");
 		}
 	}
 
