@@ -58,7 +58,7 @@ public class PausePanel extends JPanel implements ActionListener {
 			frame.getSinglePlayer().continueGame();
 
 		} else if (e.getSource().equals(restart)) {
-			frame.getSinglePlayer().restartGame(frame.getSinglePlayer().MODE);
+			frame.getSinglePlayer().restartlastGame();
 
 		} else if (e.getSource().equals(back)) {
 			frame.getSinglePlayer().stopGame();

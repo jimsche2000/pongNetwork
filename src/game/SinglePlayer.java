@@ -70,7 +70,7 @@ public class SinglePlayer extends JPanel implements KeyListener {
 								// sich bei Kollisionen des Balls mit den Schlägern/Spielern, und wird bei einem
 								// Punkt/Tor zurückgesetzt
 
-	private double botFailFactor; // die schwierigkeit des bots (Letztendlich wie oft er stehenbleibt. von 0.0 -
+	private float botFailFactor; // die schwierigkeit des bots (Letztendlich wie oft er stehenbleibt. von 0.0 -
 									// 1.0; 0.1 ist er sehr schwer, 0.5 ist er leicht)
 									// Nicht zu empfehlen die Schwierigkeit so einzustellen. Entweder überarbeiten,
 									// oder nur den erfassungsbereich verändern
@@ -81,11 +81,12 @@ public class SinglePlayer extends JPanel implements KeyListener {
 																		// Winkel
 	private GameThread t;
 	private int sleepTime = 5; // ms
-	public final int EASY_MODE = 0;
-	public final int MIDDLE_MODE = 1;
-	public final int HARD_MODE = 2;
-	public final int CUSTOM_MODE = 3;
-	public int MODE = -1;
+//	public final int EASY_MODE = 0;
+//	public final int MIDDLE_MODE = 1;
+//	public final int HARD_MODE = 2;
+	private float last_configured_ball_Speed_factor;
+//	public final int CUSTOM_MODE = 3;
+//	public int MODE = -1;
 	private float boostStep = 0.1f;
 
 	public SinglePlayer(PongFrame frame) {
@@ -143,22 +144,27 @@ public class SinglePlayer extends JPanel implements KeyListener {
 		countdown.setFont(pongFrame.getGLOBAL_FONT().deriveFont(100 * pongFrame.getASPECT_RATIO()));
 		countdown.setHorizontalAlignment(SwingConstants.CENTER);
 		countdown.setOpaque(false);
-		
-		playerLeftLabel.setBounds(Math.round(75*pongFrame.getASPECT_RATIO()), 0, Math.round(500*pongFrame.getASPECT_RATIO()), Math.round(100*pongFrame.getASPECT_RATIO()));
-		playerLeftLabel.setFont(pongFrame.getGLOBAL_FONT().deriveFont(25*pongFrame.getASPECT_RATIO()));
+
+		playerLeftLabel.setBounds(Math.round(75 * pongFrame.getASPECT_RATIO()), 0,
+				Math.round(500 * pongFrame.getASPECT_RATIO()), Math.round(100 * pongFrame.getASPECT_RATIO()));
+		playerLeftLabel.setFont(pongFrame.getGLOBAL_FONT().deriveFont(25 * pongFrame.getASPECT_RATIO()));
 		playerLeftLabel.setHorizontalAlignment(SwingConstants.LEFT);
 		playerLeftLabel.setVerticalAlignment(SwingConstants.TOP);
-		playerLeftLabel.setBorder(BorderFactory.createEmptyBorder(Math.round(10*pongFrame.getASPECT_RATIO()), 0,0,0));
+		playerLeftLabel
+				.setBorder(BorderFactory.createEmptyBorder(Math.round(10 * pongFrame.getASPECT_RATIO()), 0, 0, 0));
 		playerLeftLabel.setForeground(Color.black);
 		playerLeftLabel.setOpaque(false);
-		playerRightLabel.setBounds(Math.round((1920 - 575)*pongFrame.getASPECT_RATIO()), 0, Math.round(500*pongFrame.getASPECT_RATIO()), Math.round(100*pongFrame.getASPECT_RATIO()));
-		playerRightLabel.setFont(pongFrame.getGLOBAL_FONT().deriveFont(25*pongFrame.getASPECT_RATIO()));
+
+		playerRightLabel.setBounds(Math.round((1920 - 575) * pongFrame.getASPECT_RATIO()), 0,
+				Math.round(500 * pongFrame.getASPECT_RATIO()), Math.round(100 * pongFrame.getASPECT_RATIO()));
+		playerRightLabel.setFont(pongFrame.getGLOBAL_FONT().deriveFont(25 * pongFrame.getASPECT_RATIO()));
 		playerRightLabel.setHorizontalAlignment(SwingConstants.RIGHT);
 		playerRightLabel.setVerticalAlignment(SwingConstants.TOP);
-		playerRightLabel.setBorder(BorderFactory.createEmptyBorder(Math.round(10*pongFrame.getASPECT_RATIO()), 0,0,0));
+		playerRightLabel
+				.setBorder(BorderFactory.createEmptyBorder(Math.round(10 * pongFrame.getASPECT_RATIO()), 0, 0, 0));
 		playerRightLabel.setForeground(Color.black);
 		playerRightLabel.setOpaque(false);
-		
+
 		contentPane = new JPanel();
 		contentPane.setLocation(0, (pongFrame.getWindowResolution().height - preferredSize.height) / 2);
 		contentPane.setSize(preferredSize);
@@ -178,7 +184,7 @@ public class SinglePlayer extends JPanel implements KeyListener {
 		KeyboardFocusManager manager = KeyboardFocusManager.getCurrentKeyboardFocusManager();
 		manager.addKeyEventDispatcher(new MyDispatcher());
 		// Configure Game
-		configureGame(MIDDLE_MODE);
+		configureGame();
 		firstThreadStart = true;
 		shouldCountdown = false;
 
@@ -192,8 +198,9 @@ public class SinglePlayer extends JPanel implements KeyListener {
 
 	public void setNameLabel(String leftName, String rightName) {
 		playerLeftLabel.setText(leftName);
-		playerRightLabel.setText(rightName);		
+		playerRightLabel.setText(rightName);
 	}
+
 	private void centerPhysicObjects(boolean graphics) { // Center Ball and 2 Player
 		centerBall();
 		physicData.setPlayerOneLocation(50, (1080 - physicData.getPlayerOneHeight()) / 2);
@@ -217,7 +224,7 @@ public class SinglePlayer extends JPanel implements KeyListener {
 	}
 
 	private void setBallSpeed(float factor) {
-
+		last_configured_ball_Speed_factor = factor;
 		// startwerte für die winkel
 		weitey = 5 * factor; // schrittweite des balls in y richtung
 		weitex = 5 * factor; // schrittweite des balls in x richtung
@@ -234,13 +241,22 @@ public class SinglePlayer extends JPanel implements KeyListener {
 		boostStep = 0.1f * factor;
 	}
 
-	private void configureGame(int difficulty) {
-		MODE = difficulty;
+	private void configureGame() {
+//		MODE = difficulty;
 		scoreLabel.setText("0 : 0");
 		impossibleMode = false; // SPECIAL SPECIAL, NICHT SINNVOLL FÜR DEN SCHWIERIGKEITSGRAD
 		winkel = true; // Verschiedene Abprallwinkel, würde auf false momentan gar nicht funktionieren.
 
-		if (difficulty == this.EASY_MODE) {
+		/*
+		 * botfailfactor in %. 0.0 ist 0%, 0.3 ist 100% botSpeed in %. 1 sind 5%(MIN),
+		 * und 20 sind 100%(MAX) erfassungsbereich jeweils in %, wobei 100Px 10%, und
+		 * 1000px 100% sind Faktor für den Ball-Speed: 0.1 sind 5%, 2.0 sind 100%
+		 * //Vielleicht bei Zeiten auch dies einzeln ändern? der PlayerSpeed
+		 * einzeln(left, right) als faktor: 0.25 sind 10%, und 2.5 sind 100%
+		 * 
+		 */
+
+//		if (difficulty == this.EASY_MODE) {
 			this.botFailFactor = 0.3f;
 			botSpeed = 5; // geschwindigkeit des bots
 			erfassungsbereichRechterBot = 1200; // umso höher umso kleiner der bereich
@@ -249,24 +265,24 @@ public class SinglePlayer extends JPanel implements KeyListener {
 			leftPlayerSpeed = 7 * 1.25f;
 			rightPlayerSpeed = 7 * 1.25f;
 
-		} else if (difficulty == this.HARD_MODE) {
-			this.botFailFactor = 0.1; //
-			botSpeed = 12; // geschwindigkeit des bots
-			erfassungsbereichRechterBot = 600; // umso höher umso kleiner der bereich
-			erfassungsbereichLinkerBot = 1200;
-			setBallSpeed(1.25f);
-			leftPlayerSpeed = 7 * 0.8f;
-			rightPlayerSpeed = 7 * 0.8f;
-
-		} else {// if(difficulty == this.MIDDLE_MODE) {
-			this.botFailFactor = 0.2; //
-			botSpeed = 10; // geschwindigkeit des bots
-			erfassungsbereichRechterBot = 800; // umso höher umso kleiner der bereich
-			erfassungsbereichLinkerBot = 800;
-			setBallSpeed(1.0f);
-			leftPlayerSpeed = 7;
-			rightPlayerSpeed = 7;
-		}
+//		} else if (difficulty == this.HARD_MODE) {
+//			this.botFailFactor = 0.1f; //
+//			botSpeed = 12; // geschwindigkeit des bots
+//			erfassungsbereichRechterBot = 600; // umso höher umso kleiner der bereich
+//			erfassungsbereichLinkerBot = 1200;
+//			setBallSpeed(1.25f);
+//			leftPlayerSpeed = 7 * 0.8f;
+//			rightPlayerSpeed = 7 * 0.8f;
+//
+//		} else {// if(difficulty == this.MIDDLE_MODE) {
+//			this.botFailFactor = 0.2f; //
+//			botSpeed = 10; // geschwindigkeit des bots
+//			erfassungsbereichRechterBot = 800; // umso höher umso kleiner der bereich
+//			erfassungsbereichLinkerBot = 800;
+//			setBallSpeed(1.0f);
+//			leftPlayerSpeed = 7;
+//			rightPlayerSpeed = 7;
+//		}
 		centerPhysicObjects(true);
 
 		maxPunkte = 10;
@@ -276,7 +292,6 @@ public class SinglePlayer extends JPanel implements KeyListener {
 		x1 = false;
 		y1 = false;
 	}
-	
 
 	// stoppt den thread und setzt den ball zurück und wartet 3 Sekunden bis er
 	// wieder startet
@@ -297,8 +312,8 @@ public class SinglePlayer extends JPanel implements KeyListener {
 						pongFrame.showPane(pongFrame.LEVEL_SELECTION);
 					}
 				}, 5000);
-				
-				winner.setText(playerLeftLabel.getText()+" hat mit " + scoreLinks + ":" + scoreRechts + " Gewonnen");
+
+				winner.setText(playerLeftLabel.getText() + " hat mit " + scoreLinks + ":" + scoreRechts + " Gewonnen");
 			} else if (scoreRechts == maxPunkte) {
 				countdown(5);
 				timer.schedule(new TimerTask() {
@@ -308,7 +323,7 @@ public class SinglePlayer extends JPanel implements KeyListener {
 						pongFrame.showPane(pongFrame.LEVEL_SELECTION);
 					}
 				}, 5000);
-				winner.setText(playerRightLabel.getText()+" hat mit " + scoreRechts + ":" + scoreLinks + " Gewonnen");
+				winner.setText(playerRightLabel.getText() + " hat mit " + scoreRechts + ":" + scoreLinks + " Gewonnen");
 			}
 
 			// Hat noch keiner gewonnen?
@@ -318,18 +333,22 @@ public class SinglePlayer extends JPanel implements KeyListener {
 						boostSpeed = 0;
 						kl = false;
 						kr = false;
-						if(MODE==EASY_MODE) {
-							weitex = 6 * 0.75f;
-							weitey = 6 * 0.75f;
-							
-						}else if(MODE == HARD_MODE) {
-							weitex = 6 * 1.25f;
-							weitey = 6 * 1.25f;
-							
-						}else {
-							weitex = 6;
-							weitey = 6;
-						}
+//						if (MODE == EASY_MODE) {
+//							weitex = 6 * 0.75f;
+//							weitey = 6 * 0.75f;
+//
+//						} else if (MODE == HARD_MODE) {
+//							weitex = 6 * 1.25f;
+//							weitey = 6 * 1.25f;
+//
+//						} else if(MODE == MIDDLE_MODE){
+//							weitex = 6;
+//							weitey = 6;
+//						}else { //CUSTOM
+//							//TODO:
+//						}
+						weitex = 5 * last_configured_ball_Speed_factor;
+						weitey = 5 * last_configured_ball_Speed_factor;
 						centerBall();
 						startGame();
 					}
@@ -376,15 +395,37 @@ public class SinglePlayer extends JPanel implements KeyListener {
 		pauseMenu = false;
 	}
 
-	public void restartGame(int difficulty) {
-		configureGame(difficulty);
+	public void restartlastGame() {
+//		configureGame(difficulty);
+		centerPhysicObjects(true);
 		countdown(3);
 		pauseMenu = false;
 		startGame();
 		spielGestartet = false;
 	}
-	public void restartGame(int difficulty, boolean leftPlayerBot, boolean rightPlayerBot) {
-		configureGame(difficulty);
+
+//	public void restartGame(int difficulty, boolean leftPlayerBot, boolean rightPlayerBot) {
+//		configureGame(difficulty);
+//		countdown(3);
+//		pauseMenu = false;
+//		startGame();
+//		spielGestartet = false;
+//		this.isLeftPlayerBot = leftPlayerBot;
+//		this.isRightPlayerBot = rightPlayerBot;
+//	}
+
+	public void restartGame(boolean leftPlayerBot, boolean rightPlayerBot, float playerLeftSpeed,
+			float playerRightSpeed, float ballSpeed, float botSpeed, float botFailFactor, int erfBereichLinkerBot,
+			int erfBereichRechterBot) {
+//		MODE = CUSTOM_MODE;
+		centerPhysicObjects(true);
+		leftPlayerSpeed = playerLeftSpeed;
+		rightPlayerSpeed = playerRightSpeed;
+		setBallSpeed(ballSpeed);
+		this.botSpeed = botSpeed;
+		this.botFailFactor = botFailFactor;
+		erfassungsbereichLinkerBot = erfBereichLinkerBot;
+		erfassungsbereichRechterBot = erfBereichRechterBot;
 		countdown(3);
 		pauseMenu = false;
 		startGame();
@@ -394,12 +435,13 @@ public class SinglePlayer extends JPanel implements KeyListener {
 	}
 
 	public void stopGame() {
-		configureGame(MODE);
+		configureGame();
 		pauseMenu = true;
 		spielGestartet = false;
 	}
 
 	public void setPlayerLeftRight(boolean activated) {
+
 		if (activated) {// left = player
 			isLeftPlayerBot = true;
 			isRightPlayerBot = false;
@@ -1015,7 +1057,8 @@ public class SinglePlayer extends JPanel implements KeyListener {
 					pauseAction.getPausePanel().resume();
 					continueGame();
 				} else {
-					if(winner.getText().equals("")) {//Damit die Pause Taste nicht gedrückt werden kann, während das Spiel vorbei ist
+					if (winner.getText().equals("")) {// Damit die Pause Taste nicht gedrückt werden kann, während das
+														// Spiel vorbei ist
 						pauseGame();
 						pauseAction.action();
 					}
