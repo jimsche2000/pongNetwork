@@ -21,11 +21,15 @@ import pongtoolkit.ImageLoader;
 public class MenuLabel extends JLabel {
 
 	private static final long serialVersionUID = -6725442579572733516L;
-	private BufferedImage background = ImageLoader.loadBufferedImage("Hintergrund.png");
+//	private BufferedImage background = ImageLoader.loadBufferedImage("Hintergrund.png");
 	private Dimension size = new Dimension(400, 100);
 	private boolean autoResizeFont = false, firstTime = true, drawBackground = true, isForegroundColorSet = false,
 			drawBottomLine = false;;
 	private PongFrame pongFrame;
+	public final int ALIGN_MID = 0;
+	public final int ALIGN_LEFT = 1;
+	public final int ALIGN_RIGHT = 2;
+	private int align = 1;
 
 	public MenuLabel(PongFrame pongFrame, String text) {
 		this.pongFrame = pongFrame;
@@ -64,14 +68,44 @@ public class MenuLabel extends JLabel {
 	public void setDrawBottomLine(boolean drawBottomLine) {
 		this.drawBottomLine = drawBottomLine;
 	}
+	public void setAlignment(int align) {
+		this.align = align;
+	}
 
 	@Override
 	protected void paintComponent(Graphics g) {
-		if (drawBackground)
-			g.drawImage(background, 0, 0, this.getWidth(), this.getHeight(), null);
+		if (drawBackground) {
+			FontMetrics fm = g.getFontMetrics();
+			Color oldColor = g.getColor();
 
-		if (!isForegroundColorSet)
-			this.setForeground(getContrastColor(new Color(background.getRGB(10, 10))));
+			g.setColor(Color.white);
+			int w = getWidth();
+			int h = getHeight();
+			int stringWidth = fm.stringWidth(getText());//Text width left to right
+			
+			int x = 0;//Text start-position left side X.
+			if(align==ALIGN_RIGHT) {
+
+			    x = (w - stringWidth);
+			}else if(align == ALIGN_MID){
+
+			    x = (w - stringWidth) / 2;
+			}else if(align == ALIGN_LEFT) {
+				x = 0;
+			}
+			
+		    int baseline = fm.getMaxAscent() + (h - (fm.getAscent() + fm.getMaxDescent()))/2; 
+		    int ascent  = fm.getMaxAscent();
+//		    int descent = fm.getMaxDescent();
+		    int fontHeight = fm.getMaxAscent() + fm.getMaxDescent();//Text height top to down
+
+			int padding = Math.round(7 * pongFrame.getASPECT_RATIO());
+		    g.fillRect(x - padding, baseline-ascent - padding , stringWidth + (padding*2), fontHeight + (padding*2));
+		    
+			g.setColor(oldColor);
+		}
+//		if (!isForegroundColorSet)
+//			this.setForeground(getContrastColor(new Color(background.getRGB(10, 10))));
 
 		Font tempFont = pongFrame.getGLOBAL_FONT();
 		if (autoResizeFont && (firstTime)) {
@@ -92,7 +126,7 @@ public class MenuLabel extends JLabel {
 			g.setFont(tempFont);
 			g.drawString(this.getText(), 0, y);
 		} else {
-			drawCenteredString(g, this.getText(), new Rectangle(0, 0, getWidth(), getHeight()), tempFont);
+			drawAlignedString(g, this.getText(), new Rectangle(0,0,getWidth(), getHeight()), tempFont, align);
 		}
 		if (!isForegroundColorSet)
 			g.setColor(Color.black);
@@ -105,20 +139,59 @@ public class MenuLabel extends JLabel {
 		return y >= 128 ? Color.black : Color.white;
 	}
 
-	private void drawCenteredString(Graphics g, String text, Rectangle rect, Font font) {
+//	private void drawCenteredString(Graphics g, String text, Rectangle rect, Font font) {
+//		// Get the FontMetrics
+//		FontMetrics metrics = g.getFontMetrics(font);
+//		// Determine the X coordinate for the text
+//		int x = rect.x + (rect.width - metrics.stringWidth(text)) / 2;
+//		// Determine the Y coordinate for the text (note we add the ascent, as in java
+//		// 2d 0 is top of the screen)
+//		int y = rect.y + ((rect.height - metrics.getHeight()) / 2) + metrics.getAscent();
+//		// Set the font
+//		g.setFont(font);
+//		// Draw the String
+//		g.drawString(text, x, y);
+//	}
+	private void drawAlignedString(Graphics g, String text, Rectangle rect, Font font, int alignment) {
 		// Get the FontMetrics
 		FontMetrics metrics = g.getFontMetrics(font);
-		// Determine the X coordinate for the text
-		int x = rect.x + (rect.width - metrics.stringWidth(text)) / 2;
-		// Determine the Y coordinate for the text (note we add the ascent, as in java
-		// 2d 0 is top of the screen)
-		int y = rect.y + ((rect.height - metrics.getHeight()) / 2) + metrics.getAscent();
+		int x = 0;
+		int y = 0;
+		
+		switch(align) {
+			case ALIGN_LEFT:
+				// Determine the X coordinate for the text
+				x = 0;
+				// Determine the Y coordinate for the text (note we add the ascent, as in java
+				// 2d 0 is top of the screen)
+				y = rect.y + ((rect.height - metrics.getHeight()) / 2) + metrics.getAscent();
+				
+				break;
+			case ALIGN_RIGHT:
+				// Determine the X coordinate for the text
+				x = rect.x + (rect.width - metrics.stringWidth(text));
+				// Determine the Y coordinate for the text (note we add the ascent, as in java
+				// 2d 0 is top of the screen)
+				y = rect.y + ((rect.height - metrics.getHeight()) / 2) + metrics.getAscent();
+				
+				break;
+			case ALIGN_MID:
+				//ALIGN_MID IS DEFAULT
+			default:
+				// Determine the X coordinate for the text
+				x = rect.x + (rect.width - metrics.stringWidth(text)) / 2;
+				// Determine the Y coordinate for the text (note we add the ascent, as in java
+				// 2d 0 is top of the screen)
+				y = rect.y + ((rect.height - metrics.getHeight()) / 2) + metrics.getAscent();
+				break;
+		}
+
 		// Set the font
 		g.setFont(font);
 		// Draw the String
 		g.drawString(text, x, y);
 	}
-
+	
 	private int getMaxFontSizeForControl(MenuLabel button, String text, Graphics g, Font font) {
 		Rectangle r = button.getBounds();
 //		Insets m = button.getMargin();

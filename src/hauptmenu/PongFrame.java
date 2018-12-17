@@ -19,6 +19,7 @@ import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 
 import game.SinglePlayer;
+import gui.AlphaContainer;
 import multiplayer.client.ClientChat;
 import multiplayer.client.ClientControlPanel;
 import multiplayer.client.ClientLiveGamePanel;
@@ -157,7 +158,7 @@ public class PongFrame extends JFrame {
 		componentPanel.add(clientControlPanel, "clientControlPanel");
 		componentPanel.add(clientLiveGamePanel, "clientLiveGamePanel");
 		componentPanel.add(mainMenu, "mainMenu");
-		componentPanel.add(levelSelection, "levelSelection");
+		componentPanel.add(new AlphaContainer(levelSelection), "levelSelection");
 		componentPanel.add(credits, "credits");
 		componentPanel.add(multiPlayer, "multiPlayer");
 		componentPanel.add(singleplayer, "singleplayer");
@@ -170,6 +171,7 @@ public class PongFrame extends JFrame {
 		setCursor(Toolkit.getDefaultToolkit().createCustomCursor(cursorImage, new Point(this.getX(), this.getY()),
 				"cursor"));
 		setBackground(Color.black);
+		setIconImage(ImageLoader.loadImage("pongIcon.png"));
 		setLocationRelativeTo(null);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setUndecorated(true);

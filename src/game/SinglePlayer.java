@@ -133,18 +133,24 @@ public class SinglePlayer extends JPanel implements KeyListener {
 				Math.round(1400 * pongFrame.getASPECT_RATIO()), Math.round(100 * pongFrame.getASPECT_RATIO()));
 		winner.setFont(pongFrame.getGLOBAL_FONT().deriveFont(40 * pongFrame.getASPECT_RATIO()));
 		winner.setOpaque(false);
+		winner.setAlignment(winner.ALIGN_MID);
+		winner.setDrawBackground(false);
 		scoreLabel.setBounds(0, Math.round(10 * pongFrame.getASPECT_RATIO()), preferredSize.width,
 				Math.round(50 * pongFrame.getASPECT_RATIO()));
 		scoreLabel.setFont(pongFrame.getGLOBAL_FONT().deriveFont(50 * pongFrame.getASPECT_RATIO()));
 		scoreLabel.setOpaque(false);
+		scoreLabel.setAlignment(scoreLabel.ALIGN_MID);
+		scoreLabel.setDrawBackground(false);
 		countdown.setBounds(Math.round(600 * pongFrame.getASPECT_RATIO()), // X
 				Math.round(100 * pongFrame.getASPECT_RATIO()), // Y
 				Math.round(750 * pongFrame.getASPECT_RATIO()), // WIDTH
 				Math.round(300 * pongFrame.getASPECT_RATIO()));// HEIGHT
 		countdown.setFont(pongFrame.getGLOBAL_FONT().deriveFont(100 * pongFrame.getASPECT_RATIO()));
 		countdown.setHorizontalAlignment(SwingConstants.CENTER);
+		countdown.setAlignment(countdown.ALIGN_MID);
 		countdown.setOpaque(false);
-
+		countdown.setDrawBackground(false);
+		
 		playerLeftLabel.setBounds(Math.round(75 * pongFrame.getASPECT_RATIO()), 0,
 				Math.round(500 * pongFrame.getASPECT_RATIO()), Math.round(100 * pongFrame.getASPECT_RATIO()));
 		playerLeftLabel.setFont(pongFrame.getGLOBAL_FONT().deriveFont(25 * pongFrame.getASPECT_RATIO()));
@@ -256,7 +262,6 @@ public class SinglePlayer extends JPanel implements KeyListener {
 		 * 
 		 */
 
-//		if (difficulty == this.EASY_MODE) {
 			this.botFailFactor = 0.3f;
 			botSpeed = 5; // geschwindigkeit des bots
 			erfassungsbereichRechterBot = 1200; // umso höher umso kleiner der bereich
@@ -265,24 +270,6 @@ public class SinglePlayer extends JPanel implements KeyListener {
 			leftPlayerSpeed = 7 * 1.25f;
 			rightPlayerSpeed = 7 * 1.25f;
 
-//		} else if (difficulty == this.HARD_MODE) {
-//			this.botFailFactor = 0.1f; //
-//			botSpeed = 12; // geschwindigkeit des bots
-//			erfassungsbereichRechterBot = 600; // umso höher umso kleiner der bereich
-//			erfassungsbereichLinkerBot = 1200;
-//			setBallSpeed(1.25f);
-//			leftPlayerSpeed = 7 * 0.8f;
-//			rightPlayerSpeed = 7 * 0.8f;
-//
-//		} else {// if(difficulty == this.MIDDLE_MODE) {
-//			this.botFailFactor = 0.2f; //
-//			botSpeed = 10; // geschwindigkeit des bots
-//			erfassungsbereichRechterBot = 800; // umso höher umso kleiner der bereich
-//			erfassungsbereichLinkerBot = 800;
-//			setBallSpeed(1.0f);
-//			leftPlayerSpeed = 7;
-//			rightPlayerSpeed = 7;
-//		}
 		centerPhysicObjects(true);
 
 		maxPunkte = 10;
@@ -333,20 +320,7 @@ public class SinglePlayer extends JPanel implements KeyListener {
 						boostSpeed = 0;
 						kl = false;
 						kr = false;
-//						if (MODE == EASY_MODE) {
-//							weitex = 6 * 0.75f;
-//							weitey = 6 * 0.75f;
-//
-//						} else if (MODE == HARD_MODE) {
-//							weitex = 6 * 1.25f;
-//							weitey = 6 * 1.25f;
-//
-//						} else if(MODE == MIDDLE_MODE){
-//							weitex = 6;
-//							weitey = 6;
-//						}else { //CUSTOM
-//							//TODO:
-//						}
+
 						weitex = 5 * last_configured_ball_Speed_factor;
 						weitey = 5 * last_configured_ball_Speed_factor;
 						centerBall();
@@ -398,26 +372,22 @@ public class SinglePlayer extends JPanel implements KeyListener {
 	public void restartlastGame() {
 //		configureGame(difficulty);
 		centerPhysicObjects(true);
+		maxPunkte = 10;
+		scoreLinks = 0;
+		scoreRechts = 0;
+		// änderung der Startrichtung des balles
+		x1 = false;
+		y1 = false;
+		scoreLabel.setText("0 : 0");
 		countdown(3);
 		pauseMenu = false;
 		startGame();
 		spielGestartet = false;
 	}
 
-//	public void restartGame(int difficulty, boolean leftPlayerBot, boolean rightPlayerBot) {
-//		configureGame(difficulty);
-//		countdown(3);
-//		pauseMenu = false;
-//		startGame();
-//		spielGestartet = false;
-//		this.isLeftPlayerBot = leftPlayerBot;
-//		this.isRightPlayerBot = rightPlayerBot;
-//	}
-
 	public void restartGame(boolean leftPlayerBot, boolean rightPlayerBot, float playerLeftSpeed,
 			float playerRightSpeed, float ballSpeed, float botSpeed, float botFailFactor, int erfBereichLinkerBot,
 			int erfBereichRechterBot) {
-//		MODE = CUSTOM_MODE;
 		centerPhysicObjects(true);
 		leftPlayerSpeed = playerLeftSpeed;
 		rightPlayerSpeed = playerRightSpeed;

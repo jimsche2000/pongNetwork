@@ -78,7 +78,7 @@ public class ImageLoader {
 		BufferedImage img = null;
 		try {
 			img = ImageIO.read(ClassLoader.getSystemResource(folder + name));
-		} catch (IOException e) {
+		} catch (Exception e) {
 			System.out.println("ERR: Image \"" + name + "\" couldn't load:\n");
 			e.printStackTrace();
 		}

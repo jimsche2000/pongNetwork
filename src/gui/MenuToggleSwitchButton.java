@@ -14,7 +14,7 @@ import hauptmenu.PongFrame;
 
 @SuppressWarnings("serial")
 public class MenuToggleSwitchButton extends JPanel {
-	private boolean activated = false;
+	private volatile boolean activated = false;
 	private static final int ALPHA = 50; // how much see-thru. 0 to 255
 	private static final Color GP_BG = new Color(0, 0, 0, ALPHA);
 	private Color switchColor = Color.white, buttonColor = Color.green, borderColor = Color.black;
@@ -23,6 +23,7 @@ public class MenuToggleSwitchButton extends JPanel {
 	private Graphics2D g;
 	private PongFrame pongFrame;
 	private volatile boolean mouseHover = false;
+	private boolean enabled = true;
 
 	public MenuToggleSwitchButton(PongFrame pongFrame, int width, int height) {
 		super();
@@ -31,11 +32,13 @@ public class MenuToggleSwitchButton extends JPanel {
 		addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent arg0) {
-				if(pongFrame.getACTIVE_PANEL()==pongFrame.LEVEL_SELECTION) {
-					pongFrame.getLevelSelection().changeTextFields();
+				if(enabled) {
+					if(pongFrame.getACTIVE_PANEL()==pongFrame.LEVEL_SELECTION) {
+						pongFrame.getLevelSelection().changeTextFields();
+					}
+					activated = !activated;
+					repaint();
 				}
-				activated = !activated;
-				repaint();
 			}
 		});
 		setPreferredSize(new Dimension(width, height));
@@ -44,14 +47,16 @@ public class MenuToggleSwitchButton extends JPanel {
 		addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseEntered(MouseEvent e) {
-				mouseHover = true;
-				repaint();
+				if(enabled) {
+					mouseHover = true;
+					repaint();	
+				}
 			}
 
 			@Override
 			public void mouseExited(MouseEvent e) {
-				mouseHover = false;
-				repaint();
+					mouseHover = false;
+					repaint();	
 			}
 		});
 	}
@@ -137,5 +142,13 @@ public class MenuToggleSwitchButton extends JPanel {
 
 	public void setActiveSwitch(Color activeSwitch) {
 		this.activeSwitch = activeSwitch;
+	}
+
+	public boolean isEnabled() {
+		return enabled;
+	}
+
+	public void setEnabled(boolean enabled) {
+		this.enabled = enabled;
 	}
 }

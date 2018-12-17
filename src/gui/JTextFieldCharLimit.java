@@ -16,7 +16,6 @@ public class JTextFieldCharLimit extends PlainDocument {
 		if(str==null) {
 			return;
 		}else if((getLength() + str.length())<=limit) {
-//			str = str.tou
 			super.insertString(offset, str, set);
 		}
 		

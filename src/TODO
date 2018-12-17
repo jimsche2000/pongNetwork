@@ -1,7 +1,7 @@
 General TODO:
 
 -Multi-Monitor Support(Dialog with it the user should has the control about on which Monitor he wants to play) //In die Optionen
--Buggs beseitigen(Buggs: Die Schrift auf MenuButtons ist nicht Zentriert!; Bei CardLayout.show() wird das Model der angezeigten Buttons erst aktualisiert, wenn die Maus den Button exited)
+-Buggs beseitigen(; Bei CardLayout.show() wird das Model der angezeigten Buttons erst aktualisiert, wenn die Maus den Button exited)
 -Server-Client finden verbessern
 -Live-Game-Kommunikation auf UDP verschieben und verbessern
 -Kontrolle über Vollbild, Fenster, Randlos, Auflösung, und Framerate anbieten

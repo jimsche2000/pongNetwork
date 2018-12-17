@@ -26,6 +26,7 @@ public class PausePanel extends JPanel implements ActionListener {
 	public PausePanel(PongFrame frame) {
 		this.frame = frame;
 		pausedLabel = new MenuLabel(frame, "Spiel Pausiert");
+		pausedLabel.setAlignment(pausedLabel.ALIGN_MID);
 		pausedLabel.setSize(new Dimension(400, 75));
 		JPanel pausedPanel = new JPanel();
 		pausedPanel.setOpaque(false);
