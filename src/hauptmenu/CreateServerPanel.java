@@ -6,8 +6,8 @@ import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+import javax.swing.BorderFactory;
 import javax.swing.JPanel;
-import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
 
 import gui.MenuButton;
@@ -25,50 +25,53 @@ public class CreateServerPanel extends JPanel implements ActionListener {
 
 	private PongFrame pongFrame;
 
-	public CreateServerPanel(PongFrame pongFrame) {
+	public CreateServerPanel(PongFrame pongFrame, Dimension midSize) {
 		this.pongFrame = pongFrame;
+		setLayout(new BorderLayout());
+		setPreferredSize(midSize);
+		
 		properties = new JPanel();
+//		int borderTopBottom = (midSize.height - Math.round(275 * pongFrame.getASPECT_RATIO())) / 2; //CENTER VERTICALLY
+		int borderTopBottom = 1;
+		properties.setBorder(BorderFactory.createEmptyBorder(borderTopBottom, Math.round(400*pongFrame.getASPECT_RATIO()), 0, Math.round(400*pongFrame.getASPECT_RATIO())));
 		properties.setOpaque(false);
-		properties.setBackground(Color.black);
-		this.setSize(pongFrame.getSize());
-		this.setPreferredSize(pongFrame.getSize());
-		properties.setPreferredSize(new Dimension((int) (pongFrame.getWidth() * 0.5), (int) (pongFrame.getHeight())));
-		properties.setAlignmentX(SwingConstants.CENTER);
-		properties.setAlignmentY(SwingConstants.CENTER);
-
+		
 		labelServerName = new MenuLabel(pongFrame, "Server-Name:");
-		labelServerName.setSize(new Dimension(300, 50));
-		labelServerName.setFont(pongFrame.getGLOBAL_FONT().deriveFont(24f));
+		labelServerName.setSize(new Dimension(Math.round(300 * pongFrame.getASPECT_RATIO()), Math.round(50 * pongFrame.getASPECT_RATIO())));
+		labelServerName.setFont(pongFrame.getGLOBAL_FONT().deriveFont(24f * pongFrame.getASPECT_RATIO()));
+		labelServerName.setDrawBackground(false);
+		labelServerName.setForeground(Color.white);
 		properties.add(labelServerName);
 
 		serverNameTextField = new MenuTextField(pongFrame, System.getProperty("user.name"));
-		serverNameTextField.setFont(pongFrame.getGLOBAL_FONT().deriveFont(20f));
-		serverNameTextField.setSize(new Dimension(300, 50));
+		serverNameTextField.setFont(pongFrame.getGLOBAL_FONT().deriveFont(20f * pongFrame.getASPECT_RATIO()));
+		serverNameTextField.setSize(new Dimension(Math.round(300 * pongFrame.getASPECT_RATIO()), Math.round(50 * pongFrame.getASPECT_RATIO())));
 		serverNameTextField.setBorder(new EmptyBorder(0, 0, 0, 0));
+		serverNameTextField.setForeground(Color.white);
 		properties.add(serverNameTextField);
 
 		maxUserLabel = new MenuLabel(pongFrame, "Maximale Anzahl der User:");
-		maxUserLabel.setSize(new Dimension(510, 50));
-		maxUserLabel.setFont(pongFrame.getGLOBAL_FONT().deriveFont(20f));
+		maxUserLabel.setSize(new Dimension(Math.round(510 * pongFrame.getASPECT_RATIO()), Math.round(50 * pongFrame.getASPECT_RATIO())));
+		maxUserLabel.setFont(pongFrame.getGLOBAL_FONT().deriveFont(20f * pongFrame.getASPECT_RATIO()));
+		maxUserLabel.setDrawBackground(false);
+		maxUserLabel.setForeground(Color.white);
 		properties.add(maxUserLabel);
 
 		maxUserTextField = new MenuTextField(pongFrame, "100");
-		maxUserTextField.setFont(pongFrame.getGLOBAL_FONT().deriveFont(20f));
-		maxUserTextField.setSize(new Dimension(90, 50));
+		maxUserTextField.setFont(pongFrame.getGLOBAL_FONT().deriveFont(20f * pongFrame.getASPECT_RATIO()));
+		maxUserTextField.setSize(new Dimension(Math.round(90 * pongFrame.getASPECT_RATIO()), Math.round(50 * pongFrame.getASPECT_RATIO())));
 		maxUserTextField.setBorder(new EmptyBorder(0, 0, 0, 0));
 		maxUserTextField.setOpaque(false);
+		maxUserTextField.setForeground(Color.white);
 		properties.add(maxUserTextField);
 
 		hostServer = new MenuButton(pongFrame, "Server hosten");
-		hostServer.setSize(new Dimension(605, 100));
-		hostServer.setBorder(new EmptyBorder(0, 800, 0, 800));
+		hostServer.setSize(new Dimension(Math.round(605 * pongFrame.getASPECT_RATIO()), Math.round(100 * pongFrame.getASPECT_RATIO())));
 		hostServer.addActionListener(this);
 		hostServer.setActionCommand("HOST_SERVER");
 		properties.add(hostServer);
 
-		this.setAlignmentX(SwingConstants.CENTER);
-		this.setAlignmentY(SwingConstants.CENTER);
-		this.add(properties, BorderLayout.CENTER);
+		this.add(properties);
 	}
 
 	public void refresh() {

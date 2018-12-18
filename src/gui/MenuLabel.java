@@ -10,13 +10,10 @@ import java.awt.Rectangle;
 import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphVector;
 import java.awt.geom.Rectangle2D;
-import java.awt.image.BufferedImage;
-
 import javax.swing.JLabel;
 import javax.swing.SwingConstants;
 
 import hauptmenu.PongFrame;
-import pongtoolkit.ImageLoader;
 
 public class MenuLabel extends JLabel {
 
@@ -104,8 +101,8 @@ public class MenuLabel extends JLabel {
 		    
 			g.setColor(oldColor);
 		}
-//		if (!isForegroundColorSet)
-//			this.setForeground(getContrastColor(new Color(background.getRGB(10, 10))));
+		if (!isForegroundColorSet)
+			this.setForeground(getContrastColor(new Color(255,255,255)));
 
 		Font tempFont = pongFrame.getGLOBAL_FONT();
 		if (autoResizeFont && (firstTime)) {

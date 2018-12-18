@@ -1,26 +1,29 @@
 package hauptmenu;
 
+import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.SwingConstants;
 
 import gui.MenuButton;
+import gui.MenuLabel;
 import pongtoolkit.ImageLoader;
 
 public class MultiPlayer extends JPanel implements ActionListener {
 
 	private static final long serialVersionUID = -4370387734717892311L;
-	private JLabel title, downTitle;
+//	private JLabel title, downTitle;
+	private MenuLabel title, downTitle;
 	private MenuButton returnToMainMenu, joinServer, createServer;
-	private ImageIcon background = ImageLoader.loadIcon("network-wallpaper.jpg");
+	private ImageIcon background;
 	private JLabel backgroundLabel;
 	private CardLayout layout = new CardLayout();
 	private JPanel changePanel;
@@ -32,68 +35,76 @@ public class MultiPlayer extends JPanel implements ActionListener {
 	public MultiPlayer(PongFrame pongFrame) {
 
 		this.pongFrame = pongFrame;
-		this.setSize(1920, 1080);
-		this.setPreferredSize(new Dimension(1920, 1080));
-		this.setLayout(null);
-
+		Dimension preferredSize = pongFrame.getGraphicResolution();
+		Insets resInsets = pongFrame.getGraphicInsets();
+		this.setPreferredSize(preferredSize);
+		this.setLayout(new BorderLayout());
+		
+		background = ImageLoader.loadIcon("network-wallpaper.jpg", preferredSize);
+		
 		backgroundLabel = new JLabel();
-		backgroundLabel.setSize(new Dimension(1920, 1080));
-		backgroundLabel.setLocation(0, 0);
+		backgroundLabel.setSize(preferredSize);
 		backgroundLabel.setIcon(background);
 		backgroundLabel.setLayout(new FlowLayout());
 
-		title = new JLabel("<html>Mehrspieler</html>");
+//-----------TITLE------------------------------------------------------------------------------------
+		JPanel fillPanel = new JPanel();
+		fillPanel.setOpaque(false);
+		fillPanel.setPreferredSize(new Dimension(preferredSize.width, resInsets.top	));
+
+		title = new MenuLabel(pongFrame, "Mehrspieler");
 		title.setForeground(Color.white);
-		title.setFont(pongFrame.getGLOBAL_FONT().deriveFont(0, 70));
-		title.setPreferredSize(new Dimension(1920, 100));
-		title.setHorizontalAlignment(SwingConstants.CENTER);
-		title.setHorizontalTextPosition(SwingConstants.CENTER);
-		title.setVerticalTextPosition(SwingConstants.CENTER);
-		title.setOpaque(false);
+		title.setAlignment(title.ALIGN_MID);
+		title.setSize(new Dimension(preferredSize.width, Math.round(150  * pongFrame.getASPECT_RATIO())));
+		title.setDrawBackground(false);
+		title.setFont(pongFrame.getGLOBAL_FONT().deriveFont(70.0f * pongFrame.getASPECT_RATIO()));
 
-		downTitle = new JLabel("<html>Spielt Gemeinsam im lokalen Netzwerk<br/><br/><br/><br/></html>");
+		downTitle = new MenuLabel(pongFrame, "Spielt Gemeinsam im lokalen Netzwerk");
 		downTitle.setForeground(Color.white);
-		downTitle.setFont(pongFrame.getGLOBAL_FONT().deriveFont(0, 30));
-		downTitle.setPreferredSize(new Dimension(1920, 150));
-		downTitle.setHorizontalAlignment(SwingConstants.CENTER);
-		downTitle.setHorizontalTextPosition(SwingConstants.CENTER);
-		downTitle.setVerticalTextPosition(SwingConstants.CENTER);
-		downTitle.setOpaque(false);
-
+		downTitle.setAlignment(downTitle.ALIGN_MID);
+		downTitle.setSize(new Dimension(preferredSize.width, Math.round(150  * pongFrame.getASPECT_RATIO())));
+		downTitle.setDrawBackground(false);
+		downTitle.setFont(pongFrame.getGLOBAL_FONT().deriveFont(30.0f  * pongFrame.getASPECT_RATIO()));
+		
+		backgroundLabel.add(fillPanel);
 		backgroundLabel.add(title);
 		backgroundLabel.add(downTitle);
-		Dimension middleSize = new Dimension(1920, (int) Math.round(1080. / 1.6));
+		
+//-----------CHANGE-PANEL-----------------------------------------------------------------------------		
+		Dimension middleSize = new Dimension(preferredSize.width, ((int) Math.round(675 * pongFrame.getASPECT_RATIO())));
 		changePanel = new JPanel();
-		changePanel.setSize(middleSize);
 		changePanel.setPreferredSize(middleSize);
 		changePanel.setOpaque(false);
 		changePanel.setLayout(layout);
 
-		createServerPanel = new CreateServerPanel(pongFrame);
-		createServerPanel.setSize(middleSize);
+		createServerPanel = new CreateServerPanel(pongFrame, middleSize);
 		createServerPanel.setOpaque(false);
 		changePanel.add(createServerPanel, "createServerPanel");
 
-		joinServerPanel = new JoinServerPanel(pongFrame);
-		joinServerPanel.setSize(middleSize);
+		joinServerPanel = new JoinServerPanel(pongFrame, middleSize);
 		joinServerPanel.setOpaque(false);
+		
 		changePanel.add(joinServerPanel, "joinServerPanel");
-
 		backgroundLabel.add(changePanel);
-		backgroundLabel.add(returnToMainMenu = new MenuButton(pongFrame, "Zurück"));
+		
+		returnToMainMenu = new MenuButton(pongFrame, "Zurück");
 		returnToMainMenu.addActionListener(this);
-		returnToMainMenu.setSize(new Dimension(200, 50));
-
-		backgroundLabel.add(joinServer = new MenuButton(pongFrame, "Server beitreten"));
+		returnToMainMenu.setSize(new Dimension(Math.round(200 * pongFrame.getASPECT_RATIO()), Math.round(50 * pongFrame.getASPECT_RATIO())));
+		backgroundLabel.add(returnToMainMenu);
+		
+		joinServer = new MenuButton(pongFrame, "Server beitreten");
 		joinServer.addActionListener(this);
-		joinServer.setSize(new Dimension(400, 50));
+		joinServer.setSize(new Dimension(Math.round(400 * pongFrame.getASPECT_RATIO()), Math.round(50 * pongFrame.getASPECT_RATIO())));
 		joinServer.setEnabled(false);
-
-		backgroundLabel.add(createServer = new MenuButton(pongFrame, "Server erstellen"));
+		backgroundLabel.add(joinServer);
+		
+		createServer = new MenuButton(pongFrame, "Server erstellen");
 		createServer.addActionListener(this);
-		createServer.setSize(new Dimension(400, 50));
+		createServer.setSize(new Dimension(Math.round(400 * pongFrame.getASPECT_RATIO()), Math.round(50 * pongFrame.getASPECT_RATIO())));
+		backgroundLabel.add(createServer);
 
-		this.add(backgroundLabel);
+		setBackground(Color.black);
+		this.add(backgroundLabel, BorderLayout.CENTER);
 
 		layout.show(changePanel, "joinServerPanel");
 	}

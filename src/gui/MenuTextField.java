@@ -6,9 +6,6 @@ import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 
 import javax.swing.JTextField;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-
 import hauptmenu.PongFrame;
 import pongtoolkit.ImageLoader;
 
@@ -17,7 +14,7 @@ public class MenuTextField extends JTextField {
 	private BufferedImage background = ImageLoader.loadBufferedImage("Hintergrund.png");
 	private Dimension size = new Dimension(400, 100);
 	private Dimension backgroundSize = new Dimension(400, 100);
-	private boolean drawBackground = true, drawBorder = true;
+	private boolean drawBackground = true, drawBorder = true, isForegroundColorSet = false;
 
 	public MenuTextField(PongFrame pongFrame, String text) {
 		super.setText(text);
@@ -25,27 +22,6 @@ public class MenuTextField extends JTextField {
 
 		this.setFont(pongFrame.getGLOBAL_FONT().deriveFont(20f));
 		this.setOpaque(false);
-//		getDocument().addDocumentListener(new DocumentListener() {
-//
-//		     public void removeUpdate(DocumentEvent e) {
-//		        // TODO add code!
-////		    	setText(e.)
-//
-//		     }
-//
-//		     public void insertUpdate(DocumentEvent e) {
-//		        // TODO add code!
-//		    	 if(getText().length()>14) {
-//		    		 setText(getText().substring(0, getText().length()-1));
-//		    	 }
-////		    	 e.getDocument().
-//		     }
-//
-//		     public void changedUpdate(DocumentEvent e) {
-//		        // TODO add code!
-//
-//		     }
-//		  });
 	}
 
 	public void setSize(Dimension size) {
@@ -59,7 +35,10 @@ public class MenuTextField extends JTextField {
 	public String toString() {
 		return this.getText();
 	}
-
+	public void setForeground(Color c) {
+		isForegroundColorSet = true;
+		super.setForeground(c);
+	}
 	public void setAutoFontSize(boolean autoFontSize) {
 	}
 
@@ -80,7 +59,8 @@ public class MenuTextField extends JTextField {
 
 	@Override
 	protected void paintComponent(Graphics g) {
-		this.setForeground(getContrastColor(new Color(background.getRGB(10, 10))));
+		if (!isForegroundColorSet)
+			this.setForeground(getContrastColor(new Color(255,255,255)));
 		super.paintComponent(g);
 		if (drawBackground)
 			g.drawImage(background, 0, 0, backgroundSize.width, backgroundSize.height, null);

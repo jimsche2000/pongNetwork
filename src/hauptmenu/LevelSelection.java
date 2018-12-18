@@ -659,13 +659,13 @@ public class LevelSelection extends JPanel implements ActionListener {
 			botFailFactor = ((100 - botFailFactorSlider.getValue()) / 100.0f) * 0.3f; // 0.3 = MAX (entspricht Slider
 																						// auf 0%)
 			botSpeed = botSpeedLerp(0.0f, 12.0f, botSpeedSlider.getValue() / 100.0f);
-			erfBereichLinkerBot = (int) (1920 - ((erfassungsbereichBotLinksSlider.getValue() / 100.) * 1920));// Von
+			erfBereichLinkerBot = (int) ((erfassungsbereichBotLinksSlider.getValue() / 100.)*1920);// Von
 																												// links
 																												// gesehen
 			erfBereichRechterBot = (int) (1920 - ((erfassungsbereichBotRechtsSlider.getValue() / 100.) * 1920)); // Von
 																													// rechts
 																													// gesehen
-
+System.out.println("erfL: "+erfBereichLinkerBot+" erfR: "+erfBereichRechterBot);
 			pongFrame.getSinglePlayer().setNameLabel(leftName.getText(), rightName.getText());
 			pongFrame.getSinglePlayer().restartGame(isLeftPlayerBot, isRightPlayerBot, playerLeftSpeed,
 					playerRightSpeed, ballSpeed, botSpeed, botFailFactor, erfBereichLinkerBot, erfBereichRechterBot);

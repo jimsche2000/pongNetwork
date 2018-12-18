@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -25,6 +26,7 @@ public class Credits extends JPanel implements ActionListener {
 	public Credits(PongFrame pongFrame) {
 		this.pongFrame = pongFrame;
 		Dimension preferredSize = pongFrame.getGraphicResolution();
+		Insets resInsets = pongFrame.getGraphicInsets();
 		background = ImageLoader.loadIcon("Bims_FHD_16_9.png", preferredSize);
 		this.setLayout(new BorderLayout());
 		backgroundLabel = new JLabel();
@@ -32,6 +34,12 @@ public class Credits extends JPanel implements ActionListener {
 		backgroundLabel.setIcon(background);
 		backgroundLabel.setLayout(new FlowLayout());
 
+		JPanel fillPanel = new JPanel();
+		fillPanel.setOpaque(false);
+		fillPanel.setPreferredSize(new Dimension(preferredSize.width, resInsets.top	));
+
+		backgroundLabel.add(fillPanel);
+		
 		returnToMainMenu = new MenuButton(pongFrame, "Zurück");
 		returnToMainMenu.setSize(new Dimension(preferredSize.width / 5, preferredSize.height / 15));
 		returnToMainMenu.addActionListener(this);

@@ -9,6 +9,7 @@ import java.awt.Graphics;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.awt.Image;
+import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Toolkit;
 
@@ -37,6 +38,7 @@ public class PongFrame extends JFrame {
 
 	private JPanel componentPanel;
 	private Font GLOBAL_FONT;
+	private CardLayout cl = new CardLayout();
 	private ServerControlPanel serverControlPanel;
 	private ServerSpectatorPanel serverLiveGamePanel;
 	private ClientControlPanel clientControlPanel;
@@ -57,10 +59,10 @@ public class PongFrame extends JFrame {
 	private boolean showServerNetworkInformation = false;
 	private boolean updateUserListOnServer = false;
 	private boolean updateUserListOnClient = false;
-	private CardLayout cl = new CardLayout();
 	private float ASPECT_RATIO = 1.0f;
 	private Dimension graphicResolution;
 	private Dimension windowResolution;
+	private Insets graphicInsets;
 	private int ACTIVE_PANEL;
 
 	public final int SERVER_CONTROL_PANEL = 3;
@@ -80,30 +82,30 @@ public class PongFrame extends JFrame {
 		JDialog dialog = pane.createDialog(null, "Pong-Network-2018");
 		dialog.setModal(false);
 		dialog.setVisible(true);
-
-//		Font font;
-//		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
-//		String[] arfonts = ge.getAvailableFontFamilyNames();
+		/*
+		 * Getting installed Fonts, which load fast, and show first Menu/Screen while
+		 * special- font loads slowly from file
+		 * 
+		 * Font font; GraphicsEnvironment ge =
+		 * GraphicsEnvironment.getLocalGraphicsEnvironment(); String[] arfonts =
+		 * ge.getAvailableFontFamilyNames();
+		 */
 		flo = new FontLoader();
 		GLOBAL_FONT = flo.loadFont("PressStart2P");
 
-		// hammer wichtig
 //		Dimension fullScreenSize = new Dimension(1920, 1080); //for testing on different resolutions
 //		Dimension fullScreenSize = new Dimension(1680, 1050); // for testing on different resolutions
 		Dimension fullScreenSize = Toolkit.getDefaultToolkit().getScreenSize();
-//		int gcd = gcd(fullScreenSize.width, fullScreenSize.height); //greatest common divisor // größter gemeinsamer teiler
-//		int har = fullScreenSize.width / gcd; // horizontal aspect ratio
-//		int var = fullScreenSize.height / gcd; //vertical aspect ratio
-//		System.out.println("Aspect ratio is "+har+":"+var);
 
 		windowResolution = fullScreenSize;
-//		float[] screenSize = {1920.0f,1200.0f};
 		float[] screenSize = { (float) fullScreenSize.getWidth(), (float) fullScreenSize.getHeight() };
 		float[] programmedSize = { 1920.0f, 1080.0f };
 		ASPECT_RATIO = aspect_correct_scale_for_rect(screenSize, programmedSize);
 		graphicResolution = new Dimension((int) (1920 * ASPECT_RATIO), (int) (1080 * ASPECT_RATIO));
 		System.out.println("PR 1920,1080; ASP_RATIO: " + ASPECT_RATIO + "; Resolution: " + (graphicResolution.width)
 				+ "x" + (graphicResolution.height));
+
+		graphicInsets = setInsets(fullScreenSize, graphicResolution);
 
 		setLayout(new BorderLayout());
 		setSize(fullScreenSize);
@@ -137,7 +139,7 @@ public class PongFrame extends JFrame {
 		levelSelection = new LevelSelection(this);
 		levelSelection.setAlignmentX(SwingConstants.CENTER);
 		levelSelection.setAlignmentY(SwingConstants.CENTER);
-		
+
 		credits = new Credits(this);
 		credits.setAlignmentX(SwingConstants.CENTER);
 		credits.setAlignmentY(SwingConstants.CENTER);
@@ -151,8 +153,6 @@ public class PongFrame extends JFrame {
 		singleplayer.setAlignmentY(SwingConstants.CENTER);
 
 		componentPanel.setOpaque(false);
-//		credits.setOpaque(false); //Deswegen war der Hintergrund nicht Schwarz!
-
 		componentPanel.add(serverControlPanel, "serverControlPanel");
 		componentPanel.add(serverLiveGamePanel, "serverLiveGamePanel");
 		componentPanel.add(clientControlPanel, "clientControlPanel");
@@ -181,13 +181,28 @@ public class PongFrame extends JFrame {
 		dialog.setVisible(false);
 	}
 
+	private Insets setInsets(Dimension fullScreenSize, Dimension graphicResolution) {
+		int left = 0, top = 0, bottom = 0, right = 0;
+
+		if (fullScreenSize.width > graphicResolution.width) { // Wenn links und rechts ränder am Bildschirm sind
+			int leftToRight = fullScreenSize.width - graphicResolution.width;
+			left = leftToRight / 2;
+			right = leftToRight / 2;
+		}
+		if (fullScreenSize.height > graphicResolution.height) { // Wenn oben und unten Ränder am Bildschirm sind
+			int topToDown = fullScreenSize.height - graphicResolution.height;
+			top = topToDown / 2;
+			bottom = topToDown / 2;
+		}
+		return new Insets(top, left, bottom, right);
+	}
+
 	public void paintComponent(Graphics g) {
 		g.drawImage(cursorImage, MOUSE_LOCATION.x, MOUSE_LOCATION.y - cursorImage.getHeight(null), null);
 
 	}
 
 	boolean firstTime = true;
-
 	public void showPane(int ID) {
 
 		switch (ID) {
@@ -217,7 +232,6 @@ public class PongFrame extends JFrame {
 		case LEVEL_SELECTION:
 			ACTIVE_PANEL = this.LEVEL_SELECTION;
 			cl.show(componentPanel, "levelSelection");
-//			levelSelection.repaint();
 			break;
 		case CREDITS:
 			ACTIVE_PANEL = this.CREDITS;
@@ -239,14 +253,10 @@ public class PongFrame extends JFrame {
 		case SINGLEPLAYER:
 			ACTIVE_PANEL = this.SINGLEPLAYER;
 			cl.show(componentPanel, "singleplayer");
-//			singleplayer.repaint();
-			// Der richtige Modus wird von der LevelSelection direkt an Game übergeben
 			break;
 		default:
 			break;
 		}
-//		repaint();
-
 	}
 
 	private void setConsoleToPanel(int ID) {
@@ -267,12 +277,6 @@ public class PongFrame extends JFrame {
 			break;
 		}
 	}
-
-//	private int gcd (int a, int b) {
-//	    if (b == 0)return a;
-//	    
-//	    return gcd (b, a % b);
-//	}
 
 	/*
 	 * For a rectangle inside a screen, get the scale factor that permits the
@@ -440,4 +444,13 @@ public class PongFrame extends JFrame {
 	public void setACTIVE_PANEL(int aCTIVE_PANEL) {
 		ACTIVE_PANEL = aCTIVE_PANEL;
 	}
+
+	public Insets getGraphicInsets() {
+		return graphicInsets;
+	}
+
+	public void setGraphicInsets(Insets graphicInsets) {
+		this.graphicInsets = graphicInsets;
+	}
+
 }
