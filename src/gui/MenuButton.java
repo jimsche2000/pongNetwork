@@ -113,8 +113,6 @@ public class MenuButton extends JButton {
 			tempFont = tempFont.deriveFont(size - 2);
 			this.setFont(tempFont);
 
-		} else {
-			tempFont = this.getFont();
 		}
 		drawCenteredString(g, text.toUpperCase(), new Rectangle(0, 0, backgroundSize.width, backgroundSize.height),
 				tempFont);

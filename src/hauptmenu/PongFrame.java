@@ -50,11 +50,12 @@ public class PongFrame extends JFrame {
 	private SinglePlayer singleplayer; // Offline/SinglePlayer
 	private Point MOUSE_LOCATION = new Point(500, 500);
 	private Image cursorImage = ImageLoader.loadImage("edit_icon2.png", 50, 50);// giphy.gif
+	private Image frameIcon = ImageLoader.loadImage("PongIcon.png", 64, 64);
 	private FontLoader flo;
 	private ServerMainThread hostServer;
 	private ServerConsole hostServerConsole = new ServerConsole(this);
 	private ClientMainThread clientThread;
-	private ClientChat clientChat = new ClientChat(this);
+	private ClientChat clientChat;
 	private boolean showClientNetworkInformation = false;
 	private boolean showServerNetworkInformation = false;
 	private boolean updateUserListOnServer = false;
@@ -107,6 +108,8 @@ public class PongFrame extends JFrame {
 
 		graphicInsets = setInsets(fullScreenSize, graphicResolution);
 
+		clientChat = new ClientChat(this);
+		
 		setLayout(new BorderLayout());
 		setSize(fullScreenSize);
 
@@ -171,7 +174,7 @@ public class PongFrame extends JFrame {
 		setCursor(Toolkit.getDefaultToolkit().createCustomCursor(cursorImage, new Point(this.getX(), this.getY()),
 				"cursor"));
 		setBackground(Color.black);
-		setIconImage(ImageLoader.loadImage("pongIcon.png"));
+		setIconImage(frameIcon);
 		setLocationRelativeTo(null);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setUndecorated(true);

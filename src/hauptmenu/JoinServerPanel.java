@@ -54,8 +54,8 @@ public class JoinServerPanel extends JPanel implements ActionListener{
 		namePanel.setOpaque(false);
 		
 		nameAlreadyTaken = new MenuLabel(pongFrame,
-				"Gebe dir einen Namen und joine auf den Server deiner Wahl - oder erstelle einen Eigenen.");
-		nameAlreadyTaken.setFont(pongFrame.getGLOBAL_FONT().deriveFont(15f));
+				"Gebe dir einen Namen und joine auf den Server deiner Wahl");// - oder erstelle einen Eigenen.
+		nameAlreadyTaken.setFont(pongFrame.getGLOBAL_FONT().deriveFont(15f * pongFrame.getASPECT_RATIO()));
 		nameAlreadyTaken.setSize(new Dimension(preferredSize.width, Math.round(50 * pongFrame.getASPECT_RATIO())));
 		nameAlreadyTaken.setBorder(new EmptyBorder(1, Math.round(700 * pongFrame.getASPECT_RATIO()), 1, Math.round(700 * pongFrame.getASPECT_RATIO())));
 //		nameAlreadyTaken.setForeground(Color.red);
@@ -64,16 +64,14 @@ public class JoinServerPanel extends JPanel implements ActionListener{
 		nameAlreadyTaken.setDrawBackground(false);
 		namePanel.add(nameAlreadyTaken);
 		
-		
-
 		nameLabel = new MenuLabel(pongFrame, "Dein Name:");
-		nameLabel.setSize(new Dimension(Math.round(225 * pongFrame.getASPECT_RATIO()), Math.round(50 * pongFrame.getASPECT_RATIO())));
-		nameLabel.setFont(pongFrame.getGLOBAL_FONT().deriveFont(20f));
+		nameLabel.setSize(new Dimension(Math.round(205 * pongFrame.getASPECT_RATIO()), Math.round(50 * pongFrame.getASPECT_RATIO())));
+		nameLabel.setFont(pongFrame.getGLOBAL_FONT().deriveFont(20f * pongFrame.getASPECT_RATIO()));
 		nameLabel.setDrawBackground(false);
 		namePanel.add(nameLabel);
 
 		textField = new MenuTextField(pongFrame, "Anonymous");
-		textField.setFont(pongFrame.getGLOBAL_FONT().deriveFont(20f));
+		textField.setFont(pongFrame.getGLOBAL_FONT().deriveFont(20f * pongFrame.getASPECT_RATIO()));
 		textField.setSize(new Dimension(Math.round(300 * pongFrame.getASPECT_RATIO()), Math.round(50 * pongFrame.getASPECT_RATIO())));
 		textField.setBorder(new EmptyBorder(0, 0, 0, 0));
 
@@ -99,8 +97,6 @@ public class JoinServerPanel extends JPanel implements ActionListener{
 		namePanel.add(textField);
 		contentPane.add(namePanel);
 
-
-
 		serverList = new ArrayList<ServerAttributes>();
 		serverJoinButtons = new ArrayList<MenuButton>();
 
@@ -113,9 +109,8 @@ public class JoinServerPanel extends JPanel implements ActionListener{
 		reloadPanel.add(reloadButton);
 		contentPane.add(reloadPanel);
 		
-		
 		serverNameTitle = new MenuLabel(pongFrame, "Server-Name");
-		serverNameTitle.setFont(pongFrame.getGLOBAL_FONT().deriveFont(12f));
+		serverNameTitle.setFont(pongFrame.getGLOBAL_FONT().deriveFont(12f * pongFrame.getASPECT_RATIO()));
 		serverNameTitle.setHorizontalTextPosition(SwingConstants.LEFT);
 		serverNameTitle.setDrawBottomLine(true);
 		serverNameTitle.setSize(new Dimension(Math.round(400 * pongFrame.getASPECT_RATIO()), Math.round(50 * pongFrame.getASPECT_RATIO())));
@@ -123,7 +118,7 @@ public class JoinServerPanel extends JPanel implements ActionListener{
 		serverNameTitle.setForeground(Color.white);
 		
 		serverIpAdressTitle = new MenuLabel(pongFrame, "IP-Adresse");
-		serverIpAdressTitle.setFont(pongFrame.getGLOBAL_FONT().deriveFont(12f));
+		serverIpAdressTitle.setFont(pongFrame.getGLOBAL_FONT().deriveFont(12f * pongFrame.getASPECT_RATIO()));
 		serverIpAdressTitle.setHorizontalTextPosition(SwingConstants.LEFT);
 		serverIpAdressTitle.setDrawBottomLine(true);
 		serverIpAdressTitle.setSize(new Dimension(Math.round(300 * pongFrame.getASPECT_RATIO()), Math.round(50 * pongFrame.getASPECT_RATIO())));
@@ -131,7 +126,7 @@ public class JoinServerPanel extends JPanel implements ActionListener{
 		serverIpAdressTitle.setForeground(Color.white);
 		
 		serverUserCountTitle = new MenuLabel(pongFrame, "Spieler");
-		serverUserCountTitle.setFont(pongFrame.getGLOBAL_FONT().deriveFont(12f));
+		serverUserCountTitle.setFont(pongFrame.getGLOBAL_FONT().deriveFont(12f * pongFrame.getASPECT_RATIO()));
 		serverUserCountTitle.setHorizontalTextPosition(SwingConstants.LEFT);
 		serverUserCountTitle.setDrawBottomLine(true);
 		serverUserCountTitle.setSize(new Dimension(Math.round(150 * pongFrame.getASPECT_RATIO()), Math.round(50 * pongFrame.getASPECT_RATIO())));
@@ -139,7 +134,7 @@ public class JoinServerPanel extends JPanel implements ActionListener{
 		serverUserCountTitle.setForeground(Color.white);
 		
 		serverJoinTitle = new MenuLabel(pongFrame, "Verbinden");
-		serverJoinTitle.setFont(pongFrame.getGLOBAL_FONT().deriveFont(12f));
+		serverJoinTitle.setFont(pongFrame.getGLOBAL_FONT().deriveFont(12f * pongFrame.getASPECT_RATIO()));
 		serverJoinTitle.setHorizontalTextPosition(SwingConstants.RIGHT);
 		serverJoinTitle.setDrawBottomLine(true);
 		serverJoinTitle.setSize(new Dimension(Math.round(140 * pongFrame.getASPECT_RATIO()), Math.round(50 * pongFrame.getASPECT_RATIO())));
@@ -159,7 +154,7 @@ public class JoinServerPanel extends JPanel implements ActionListener{
 		serverListTitlePanel.add(serverJoinTitle);
 
 		contentPane.add(serverListTitlePanel);
-		scrollPane = new JScrollPane(serverListPanel, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
+		scrollPane = new JScrollPane(serverListPanel, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, //JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED
 		JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 		scrollPane.getVerticalScrollBar().setUnitIncrement(16);
 		scrollPane.setPreferredSize(new Dimension(serverListPanel.getPreferredSize().width + Math.round(15 * pongFrame.getASPECT_RATIO()),

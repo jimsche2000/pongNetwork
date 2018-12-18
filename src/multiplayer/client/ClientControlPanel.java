@@ -3,17 +3,22 @@ package multiplayer.client;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-import javax.swing.JButton;
+
+import javax.swing.ImageIcon;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
-import javax.swing.SwingConstants;
 
-import gui.ShadowLabel;
+import gui.MenuButton;
+import gui.MenuLabel;
 import hauptmenu.PongFrame;
+import pongtoolkit.ImageLoader;
 
 /*
  * ClientControlPanel:
@@ -25,73 +30,75 @@ import hauptmenu.PongFrame;
 public class ClientControlPanel extends JPanel implements ActionListener {
 
 	private static final long serialVersionUID = 1L;
-	private JButton skipBack;
-	private JPanel contentPane;
-	private JTextField serverNameTextField;
-	private JTextField maxUserTextField;
-	private ShadowLabel maxUserLabel, title, labelServerName, chatTitle;
+	private MenuButton skipBack;
+	private MenuLabel title, chatTitle;
+	private ImageIcon background;
+	private JLabel backgroundLabel;
 
 	// Components for Suggesting Bingo-Sentences
 	private PongFrame pongFrame;
 
 	public ClientControlPanel(PongFrame pongFrame) {
 		this.pongFrame = pongFrame;
+		Dimension preferredSize = pongFrame.getGraphicResolution();
+		Insets resInsets = pongFrame.getGraphicInsets();
+		setPreferredSize(preferredSize);
+		setBackground(Color.black);
 		this.setLayout(new BorderLayout());
-		contentPane = new JPanel();
-		contentPane.setOpaque(false);
-		contentPane.setBackground(Color.black);
-		this.setSize(pongFrame.getSize());
-		contentPane.setPreferredSize(
-				new Dimension((int) (pongFrame.getWidth() * 0.5), (int) (pongFrame.getHeight() * 0.5)));
-//		contentPane.setMaximumSize(new Dimension((int) (pongFrame.getWidth() * 0.5), (int) (pongFrame.getHeight() * 0.5)));
-		contentPane.setLayout(null);
 
-		title = new ShadowLabel("Spiel wird konfiguriert", 30, 300, 49);
-		title.setBounds(25, 0, 400, 60);
-		contentPane.add(title);
+		background = ImageLoader.loadIcon("ClientWallpaper.jpg", preferredSize);
 
-		contentPane.setAlignmentX(SwingConstants.CENTER);
-		contentPane.setAlignmentY(SwingConstants.CENTER);
-		this.setAlignmentX(SwingConstants.CENTER);
-		this.setAlignmentY(SwingConstants.CENTER);
+		backgroundLabel = new JLabel();
+		backgroundLabel.setPreferredSize(preferredSize);
+		backgroundLabel.setIcon(background);
+		backgroundLabel.setLayout(new FlowLayout());
 
-		labelServerName = new ShadowLabel("Server-Name", 24, 300, 31);
-		labelServerName.setBounds(25, 60, 300, 35);
-		contentPane.add(labelServerName);
+		JPanel fillPanel = new JPanel();
+		fillPanel.setOpaque(false);
+		fillPanel.setPreferredSize(new Dimension(preferredSize.width, resInsets.top));
 
-		serverNameTextField = new JTextField("");
-		serverNameTextField.setBounds(25, 100, 300, 25);
-		serverNameTextField.setColumns(10);
-		serverNameTextField.setEditable(false);
-		contentPane.add(serverNameTextField);
+		backgroundLabel.add(fillPanel);
 
-		maxUserLabel = new ShadowLabel("Maximale Anzahl der User", 24, 300, 31);
-		maxUserLabel.setBounds(25, 130, 300, 31);
-		contentPane.add(maxUserLabel);
+		title = new MenuLabel(pongFrame, "Das Spiel wird vorbereitet...");
+		title.setPreferredSize(new Dimension(preferredSize.width, Math.round(100 * pongFrame.getASPECT_RATIO())));
+		title.setFont(pongFrame.getGLOBAL_FONT().deriveFont(30f * pongFrame.getASPECT_RATIO()));
+		title.setDrawBackground(false);
+		title.setAlignment(title.ALIGN_MID);
+		backgroundLabel.add(title);
 
-		maxUserTextField = new JTextField("");
-		maxUserTextField.setBounds(25, 165, 300, 25);
-		maxUserTextField.setEditable(false);
-		contentPane.add(maxUserTextField);
+		JPanel chatPanel = new JPanel();
+		chatPanel.setLayout(new FlowLayout());
+		chatPanel.setOpaque(false);
+		chatPanel.setPreferredSize(new Dimension(preferredSize.width, Math.round(725f * pongFrame.getASPECT_RATIO()))); //
 
-		skipBack = new JButton("Server verlassen");
-		skipBack.setBounds(25, 255, 305, 50);
+		chatTitle = new MenuLabel(pongFrame, "Chat");
+		chatTitle.setPreferredSize(new Dimension(preferredSize.width, Math.round(100 * pongFrame.getASPECT_RATIO())));
+		chatTitle.setFont(pongFrame.getGLOBAL_FONT().deriveFont(25f * pongFrame.getASPECT_RATIO()));
+		chatTitle.setDrawBackground(false);
+		chatTitle.setAlignment(chatTitle.ALIGN_MID);
+
+		chatPanel.add(chatTitle);
+
+		pongFrame.getClientChat().setPreferredSize(new Dimension(Math.round(1300 * pongFrame.getASPECT_RATIO()),
+				Math.round(675 * pongFrame.getASPECT_RATIO())));
+		chatPanel.add(pongFrame.getClientChat());
+		backgroundLabel.add(chatPanel);
+
+		skipBack = new MenuButton(pongFrame, "Server verlassen");
+		skipBack.setSize(new Dimension(Math.round(350 * pongFrame.getASPECT_RATIO()),
+				Math.round(50 * pongFrame.getASPECT_RATIO())));
+		skipBack.setFont(pongFrame.getGLOBAL_FONT().deriveFont(20f * pongFrame.getASPECT_RATIO()));
 		skipBack.addActionListener(this);
-		contentPane.add(skipBack);
+		backgroundLabel.add(skipBack);
 
-		chatTitle = new ShadowLabel("Chat", 25, 200, 35);
-		chatTitle.setBounds(25, 400, 200, 39);
-		contentPane.add(chatTitle);
-		pongFrame.getClientChat().setBounds(25, 450, 877, 340);// 877 340
-		contentPane.add(pongFrame.getClientChat());
-		this.add(contentPane, BorderLayout.CENTER);
+		add(backgroundLabel, BorderLayout.CENTER);
 	}
 
 	public void setChatVisible(boolean visible) {
 		if (visible) {
-			contentPane.add(pongFrame.getClientChat());
+			backgroundLabel.add(pongFrame.getClientChat());
 		} else {
-			contentPane.remove(pongFrame.getClientChat());
+			backgroundLabel.remove(pongFrame.getClientChat());
 		}
 	}
 

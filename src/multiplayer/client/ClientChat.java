@@ -7,13 +7,14 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 
-import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
-import javax.swing.JTextField;
 import javax.swing.ScrollPaneConstants;
 
+import gui.JTextFieldCharLimit;
+import gui.MenuButton;
+import gui.MenuTextField;
 import hauptmenu.PongFrame;
 
 /*
@@ -30,9 +31,9 @@ public class ClientChat extends JPanel {
 
 	private static final long serialVersionUID = 1L;
 	private JPanel contentPane;
-	public JTextArea textAreaMessages;
-	public JTextField textFieldMessage;
-	private JButton button_SendMessage;
+	private JTextArea textAreaMessages;
+	private MenuTextField textFieldMessage;
+	private MenuButton button_SendMessage;
 	private JScrollPane scrollPaneMessages;
 
 	// actual timestamp to wait 0.5sec
@@ -45,32 +46,48 @@ public class ClientChat extends JPanel {
 
 	public ClientChat(PongFrame pongFrame) {
 		this.pongFrame = pongFrame;
-		this.setSize(800, 600);
 		contentPane = new JPanel();
 		contentPane.setLayout(new BorderLayout());
+		contentPane.setOpaque(false);
+		setPreferredSize(new Dimension(Math.round(1300 * pongFrame.getASPECT_RATIO()),
+				Math.round(675 * pongFrame.getASPECT_RATIO())));
 
 		textAreaMessages = new JTextArea();
 		textAreaMessages.setEditable(false);
+		textAreaMessages.setOpaque(false);
 
-		textFieldMessage = new JTextField(65); // 38
-		textFieldMessage.addKeyListener(new SendPressEnterListener());
-
-		button_SendMessage = new JButton("Senden");
-		button_SendMessage.addActionListener(new SendButtonListener());
+		textAreaMessages.setFont(pongFrame.getGLOBAL_FONT().deriveFont(10f * pongFrame.getASPECT_RATIO()));
 
 		// Scrollbalken zur textArea hinzufügen
 		scrollPaneMessages = new JScrollPane(textAreaMessages);
-		scrollPaneMessages.setPreferredSize(new Dimension(870, 300));
-		scrollPaneMessages.setMinimumSize(new Dimension(870, 300));
+		scrollPaneMessages.setPreferredSize(new Dimension(Math.round(1200 * pongFrame.getASPECT_RATIO()),
+				Math.round(550 * pongFrame.getASPECT_RATIO())));
 		scrollPaneMessages.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		scrollPaneMessages.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
 		contentPane.add(scrollPaneMessages, BorderLayout.CENTER);
 
-		JPanel p = new JPanel();
-		p.add(textFieldMessage);
-		p.add(button_SendMessage);
-		contentPane.add(p, BorderLayout.PAGE_END);
+		JPanel textFieldButtonPanel = new JPanel(); // 1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890
+		textFieldButtonPanel.setOpaque(false);
+		textFieldButtonPanel.setPreferredSize(new Dimension(Math.round(1300 * pongFrame.getASPECT_RATIO()),
+				Math.round(100 * pongFrame.getASPECT_RATIO())));
 
+		textFieldMessage = new MenuTextField(pongFrame, "");
+		textFieldMessage.setSize(new Dimension(Math.round(1100 * pongFrame.getASPECT_RATIO()),
+				Math.round(50 + pongFrame.getASPECT_RATIO())));
+		textFieldMessage.setFont(pongFrame.getGLOBAL_FONT().deriveFont(14f * pongFrame.getASPECT_RATIO()));
+		textFieldMessage.setDocument(new JTextFieldCharLimit(100));
+		textFieldMessage.addKeyListener(new SendPressEnterListener());
+
+		button_SendMessage = new MenuButton(pongFrame, "Senden");
+		button_SendMessage.setFont(pongFrame.getGLOBAL_FONT().deriveFont(12f * pongFrame.getASPECT_RATIO()));
+		button_SendMessage.setSize(new Dimension(Math.round(100 * pongFrame.getASPECT_RATIO()),
+				Math.round(50 + pongFrame.getASPECT_RATIO())));
+		button_SendMessage.addActionListener(new SendButtonListener());
+
+		textFieldButtonPanel.add(textFieldMessage);
+		textFieldButtonPanel.add(button_SendMessage);
+		contentPane.add(textFieldButtonPanel, BorderLayout.PAGE_END);
+		setOpaque(false);
 		this.add(BorderLayout.CENTER, contentPane);
 	}
 

@@ -20,7 +20,7 @@ public class MenuTextField extends JTextField {
 		super.setText(text);
 		setSize(size);
 
-		this.setFont(pongFrame.getGLOBAL_FONT().deriveFont(20f));
+		this.setFont(pongFrame.getGLOBAL_FONT().deriveFont(20f * pongFrame.getASPECT_RATIO()));
 		this.setOpaque(false);
 	}
 
