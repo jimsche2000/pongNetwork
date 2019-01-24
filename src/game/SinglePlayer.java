@@ -4,8 +4,6 @@ import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Image;
-import java.awt.KeyEventDispatcher;
-import java.awt.KeyboardFocusManager;
 import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
@@ -22,6 +20,7 @@ import javax.swing.SwingConstants;
 import gui.MenuLabel;
 import hauptmenu.PongFrame;
 import pause.PauseAction;
+import pause.PausePanelSinglePlayer;
 
 @SuppressWarnings("serial")
 public class SinglePlayer extends JPanel implements KeyListener {
@@ -44,7 +43,7 @@ public class SinglePlayer extends JPanel implements KeyListener {
 	private boolean countdownActive = false;
 	private boolean firstThreadStart;
 	private boolean spielGestartet;
-	private boolean pauseMenu;
+	private boolean pauseMenu, escapeReleased;
 	private volatile boolean shouldCountdown;
 	public int scoreLinks; // Score des linken Spielers
 	public int scoreRechts; // Score des rechten Spielers
@@ -94,6 +93,9 @@ public class SinglePlayer extends JPanel implements KeyListener {
 		Dimension preferredSize = pongFrame.getGraphicResolution();
 		physicData = new PhysicData(50, 10, 200);
 		this.pauseAction = new PauseAction(frame);
+		pauseMenu = false;
+		escapeReleased = true;
+
 		this.setLayout(null);
 		ball = new Ball();
 		ball.setBounds(Math.round(physicData.getBallX() * pongFrame.getASPECT_RATIO()),
@@ -150,7 +152,7 @@ public class SinglePlayer extends JPanel implements KeyListener {
 		countdown.setAlignment(countdown.ALIGN_MID);
 		countdown.setOpaque(false);
 		countdown.setDrawBackground(false);
-		
+
 		playerLeftLabel.setBounds(Math.round(75 * pongFrame.getASPECT_RATIO()), 0,
 				Math.round(500 * pongFrame.getASPECT_RATIO()), Math.round(100 * pongFrame.getASPECT_RATIO()));
 		playerLeftLabel.setFont(pongFrame.getGLOBAL_FONT().deriveFont(25 * pongFrame.getASPECT_RATIO()));
@@ -187,8 +189,8 @@ public class SinglePlayer extends JPanel implements KeyListener {
 		contentPane.add(sRechts);
 		this.setBackground(Color.black);
 		this.add(contentPane);
-		KeyboardFocusManager manager = KeyboardFocusManager.getCurrentKeyboardFocusManager();
-		manager.addKeyEventDispatcher(new MyDispatcher());
+//		KeyboardFocusManager manager = KeyboardFocusManager.getCurrentKeyboardFocusManager();
+//		manager.addKeyEventDispatcher(new MyDispatcher());
 		// Configure Game
 		configureGame();
 		firstThreadStart = true;
@@ -262,13 +264,13 @@ public class SinglePlayer extends JPanel implements KeyListener {
 		 * 
 		 */
 
-			this.botFailFactor = 0.3f;
-			botSpeed = 5; // geschwindigkeit des bots
-			erfassungsbereichRechterBot = 1200; // umso höher umso kleiner der bereich
-			erfassungsbereichLinkerBot = 600;
-			setBallSpeed(0.7f);
-			leftPlayerSpeed = 7 * 1.25f;
-			rightPlayerSpeed = 7 * 1.25f;
+		this.botFailFactor = 0.3f;
+		botSpeed = 5; // geschwindigkeit des bots
+		erfassungsbereichRechterBot = 1200; // umso höher umso kleiner der bereich
+		erfassungsbereichLinkerBot = 600;
+		setBallSpeed(0.7f);
+		leftPlayerSpeed = 7 * 1.25f;
+		rightPlayerSpeed = 7 * 1.25f;
 
 		centerPhysicObjects(true);
 
@@ -1022,15 +1024,19 @@ public class SinglePlayer extends JPanel implements KeyListener {
 		}
 
 		if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
-			if (pongFrame.getACTIVE_PANEL() == pongFrame.SINGLEPLAYER) {
+
+			if (escapeReleased) {
+				escapeReleased = false;
 				if (pauseMenu) {
-					pauseAction.getPausePanel().resume();
+					PausePanelSinglePlayer panel = (PausePanelSinglePlayer) pauseAction
+							.getPausePanel(pauseAction.ID_SINGLEPLAYER_PANEL);
+					panel.resume();
 					continueGame();
 				} else {
 					if (winner.getText().equals("")) {// Damit die Pause Taste nicht gedrückt werden kann, während das
 														// Spiel vorbei ist
 						pauseGame();
-						pauseAction.action();
+						pauseAction.action(pauseAction.ID_SINGLEPLAYER_PANEL);
 					}
 				}
 			}
@@ -1055,21 +1061,27 @@ public class SinglePlayer extends JPanel implements KeyListener {
 		if (e.getKeyCode() == KeyEvent.VK_DOWN) {
 			downArrow = false;
 		}
-	}
-
-	private class MyDispatcher implements KeyEventDispatcher {
-		@Override
-		public boolean dispatchKeyEvent(KeyEvent e) {
-			if (e.getID() == KeyEvent.KEY_PRESSED) {
-				keyPressed(e);
-			} else if (e.getID() == KeyEvent.KEY_RELEASED) {
-				keyReleased(e);
-			} else if (e.getID() == KeyEvent.KEY_TYPED) {
-				keyTyped(e);
-			}
-			return false;
+		if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
+			escapeReleased = true;
 		}
 	}
+
+//	private class MyDispatcher implements KeyEventDispatcher {
+//		@Override
+//		public boolean dispatchKeyEvent(KeyEvent e) {
+//
+//			if (pongFrame.getACTIVE_PANEL() == pongFrame.SINGLEPLAYER) {
+//				if (e.getID() == KeyEvent.KEY_PRESSED) {
+//					keyPressed(e);
+//				} else if (e.getID() == KeyEvent.KEY_RELEASED) {
+//					keyReleased(e);
+//				} else if (e.getID() == KeyEvent.KEY_TYPED) {
+//					keyTyped(e);
+//				}
+//			}
+//			return false;
+//		}
+//	}
 
 	private class RunWrapper implements Runnable {
 		private int milliSeconds;

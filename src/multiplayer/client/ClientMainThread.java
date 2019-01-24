@@ -4,27 +4,36 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.InterfaceAddress;
 import java.net.NetworkInterface;
 import java.net.Socket;
+import java.net.SocketException;
 import java.net.SocketTimeoutException;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 
-import game.PongLocationData;
 import hauptmenu.PongFrame;
-import multiplayer.server.ServerAttributes;
+import multiplayer.datapacks.GameCountdownData;
+import multiplayer.datapacks.GameRequestData;
+import multiplayer.datapacks.PongLocationData;
+import multiplayer.datapacks.PongSliderData;
+import multiplayer.datapacks.ServerAttributes;
 import pongtoolkit.ObjectStringCoder;
 
 public class ClientMainThread {
 
 	// SearchForServers
-	private DatagramSocket c;
+	private DatagramSocket searchSocket;
 	private volatile ArrayList<ServerAttributes> serverList;
 	private boolean shouldSearchForServer = false;
+
+	// UDP-Live-Game-Koordinaten
+	private DatagramSocket udpSocket;
 
 	// connect to server
 	private ServerAttributes connectedServer;
@@ -43,6 +52,12 @@ public class ClientMainThread {
 	private final String PLAYER_LEFT_MODE = "PLAYER_LEFT_MODE";
 	private final String PLAYER_RIGHT_MODE = "PLAYER_RIGHT_MODE";
 	private final String IN_GAME_POSITIONS = "IN_GAME_POSITIONS";
+	private final String GAME_REQUEST_DATA = "GAME_REQUEST_DATA";
+	private final String GAME_COUNTDOWN_DATA = "GAME_COUNTDOWN_DATA";
+//	private final String GAME_REQUEST_SERVER_TO_CLIENT = "GAME_REQUEST_SERVER_TO_CLIENT";
+//	private final String GAME_REQUEST_CLIENT_TO_SERVER = "GAME_REQUEST_CLIENT_TO_SERVER";
+//	private final String GAME_REQUEST_REPLY_SERVER_TO_CLIENT = "GAME_REQUEST_REPLY_SERVER_TO_CLIENT";
+//	private final String GAME_REQUEST_REPLY_CLIENT_TO_SERVER = "GAME_REQUEST_REPLY_CLIENT_TO_SERVER";
 
 	private PongFrame pongFrame;
 
@@ -67,20 +82,88 @@ public class ClientMainThread {
 			reader = new BufferedReader(new InputStreamReader(client.getInputStream()));
 			writer = new PrintWriter(client.getOutputStream());
 
-			Thread t = new Thread(new MessagesFromServerListener());
+			Thread t = new Thread(new MessagesFromServerListenerTCP_IP());
 			t.start();
 
-			sendMessageToServer(NO_CHAT_MESSAGE + "JOINING" + getUserName());
+			Thread t2 = new Thread(new MessagesFromServerListenerUDP());
+			t2.start();
+
+			sendMessageToServerUsingTCP_IP(NO_CHAT_MESSAGE + "JOINING" + getUserName());
 
 			return true; // yolo
 		} catch (Exception e) {
 			appendTextMessages("Netzwerkverbindung konnte nicht hergestellt werden",
 					pongFrame.getClientChat().LEVEL_ERROR);
-			System.out.println("\n\nI BIMS 1 EXCEPTION\n\n");
+//			System.out.println("\n\nI BIMS 1 EXCEPTION\n\n");
 			e.printStackTrace();
 
 			return false;
 		}
+	}
+
+	public boolean disconnectFromServer(boolean WasOnServerChat) {
+
+//		System.out.println("iBims1leavenderdude");
+
+		try {
+			if (WasOnServerChat)
+				sendMessageToServerUsingTCP_IP(NO_CHAT_MESSAGE + "LEAVING" + getUserName());
+
+			client.close();
+			reader.close();
+			writer.close();
+
+			setConnectServer(null);
+			return true;
+		} catch (Exception e) {
+
+			return false;
+		}
+	}
+
+	public void sendMessageToServerUsingTCP_IP(String message) {
+		if (writer != null) {
+			if (!message.contains(NO_CHAT_MESSAGE)) {
+
+				message = getUserName() + ":" + message;
+				ClientChat.last_timestamp = System.currentTimeMillis();
+			}
+			writer.println(message);
+			writer.flush();
+		}
+	}
+
+	public void appendTextMessages(String message, int level) {
+		pongFrame.getClientChat().appendTextToChat(message, level);
+	}
+
+	public void executeCommand(String msg) {
+//		System.out.println("MSG: \""+msg+"\"");
+		if (msg != null) {
+			if (!msg.equals("")) {
+				if (msg.substring(0, 1).equals("/")) { // Command
+
+				} else { // Message
+					sendMessageToServerUsingTCP_IP(msg);
+				}
+			}
+		}
+	}
+
+	public String getUserName() {
+		return userName;
+	}
+
+	public void setUserName(String userName) {
+		this.userName = userName;
+	}
+
+	public ServerAttributes getConnectedServer() {
+		return connectedServer;
+	}
+
+	public void setConnectServer(ServerAttributes connectedServer) {
+		this.connectedServer = connectedServer;
 	}
 
 	public ArrayList<ServerAttributes> getServerlist() {
@@ -129,70 +212,133 @@ public class ClientMainThread {
 
 	public void setShouldSearchForServer(boolean shouldSearchForServer) {
 		this.shouldSearchForServer = shouldSearchForServer;
-		System.out.println("SETTING SHOULD SERCH FOR SERVER " + shouldSearchForServer);
+//		System.out.println("SETTING SHOULD SERCH FOR SERVER " + shouldSearchForServer);
 	}
 
-	public boolean disconnectFromServer(boolean WasOnServerChat) {
+	/*
+	 * Send reply-message to server
+	 */
+	public void sendAnswerToServersGameRequest(GameRequestData gRD, boolean accepted) {
 
-		System.out.println("iBims1leavenderdude");
+		if (getUserName().equals(gRD.getPlayerLeftName())) {
+			gRD.setPlayerLeftAccepted(accepted);
+			System.out.println("Client: Linker Spieler: " + accepted);
+		} else if (getUserName().equals(gRD.getPlayerRightName())) {
+			gRD.setPlayerRightAccepted(accepted);
+			System.out.println("Client: Rechter Spieler: " + accepted);
+		}
 
+		String objectString = null;
 		try {
-			if (WasOnServerChat)
-				sendMessageToServer(NO_CHAT_MESSAGE + "LEAVING" + getUserName());
+			objectString = ObjectStringCoder.objectToString(gRD);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		String message = NO_CHAT_MESSAGE + GAME_REQUEST_DATA + "{PRD=" + objectString + "}";
+		System.out.println("Client: Sending message to Server: \"" + message + "\"");
+		sendMessageToServerUsingTCP_IP(message);
+		System.out.println("Client: Erfolgreich Nachricht an Server gesendet");
+	}
 
-			client.close();
-			reader.close();
-			writer.close();
+	// TODO: Kann ein DatagramSocket Pakete senden, während es auf empfangende
+	// Pakete wartet?
+	private void sendPacketUDP(String IP, String message) {
+		// Get InetAddress
+		InetAddress IPAddress = null;
+		try {
+			IPAddress = InetAddress.getByName(IP);
+		} catch (UnknownHostException e1) {
+			e1.printStackTrace();
+		}
 
-			setConnect_Server(null);
-			return true;
-		} catch (Exception e) {
+		// Get Message Data
+		byte[] sendData = null;
+		sendData = message.getBytes();
 
-			return false;
+		// Send Paket
+		DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress, 8887);
+		try {
+			udpSocket.send(sendPacket);
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 	}
 
-	public void sendMessageToServer(String message) {
-		if (writer != null) {
-			if (!message.contains(NO_CHAT_MESSAGE)) {
-
-				message = getUserName() + ":" + message;
+	public class MessagesFromServerListenerUDP implements Runnable {
+		// Nur für live-game-koordinaten!
+		private int port;
+		private boolean firsttime;
+		public MessagesFromServerListenerUDP() {
+			this.port = 8887;
+			firsttime = true;
+		}
+		@Override
+		public void run() {
+			
+			byte[] recvBuf = new byte[15000];
+			DatagramPacket receivePacket = new DatagramPacket(recvBuf, recvBuf.length);
+			
+			if(firsttime) {
+				try {
+					udpSocket = new DatagramSocket(port, InetAddress.getByName(connectedServer.getIP()));
+				} catch (SocketException | UnknownHostException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
-			writer.println(message);
-			writer.flush();
+			
+			while (true) {
+
+				try {
+//					udpSocket.setSoTimeout(1000);
+					udpSocket.receive(receivePacket);
+
+//					String message = receivePacket.getData().toString();
+					String message = new String(receivePacket.getData(), 0, receivePacket.getLength());
+
+					System.out.println("UDP RECEIVED PAKET: \"" + message + "\"");
+					if (message.contains(GAME_COUNTDOWN_DATA)) {
+//						System.out.println("Client>>Received message countdown-time");
+						showCountdown(message.substring(message.indexOf("{")));
+					} else if (message.contains(IN_GAME_POSITIONS)) {
+//						System.out.println("Client>>Received message ingame-positions");
+
+						safeInGameLocations(message.substring(message.indexOf("{")));
+					}
+
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
 		}
-		ClientChat.last_timestamp = System.currentTimeMillis();
-	}
 
-	public void appendTextMessages(String message, int level) {
-		pongFrame.getClientChat().appendTextToChat(message, level);
-	}
+		private void showCountdown(String countdownData) {
+			String objectString = countdownData.substring(countdownData.indexOf("{GCD=") + 5,
+					countdownData.lastIndexOf("}"));
+			GameCountdownData gCD = null;
+			try {
+				gCD = (GameCountdownData) ObjectStringCoder.stringToObject(objectString);
+			} catch (ClassNotFoundException | IOException e) {
+				e.printStackTrace();
+			}
+			pongFrame.getClientLiveGamePanel().getSpielfeld().updateCountdown(gCD);
+		}
 
-	public void executeCommand(String msg) {
-		if (msg.substring(0, 1).equals("/")) { // Command
+		private void safeInGameLocations(String locationData) {
 
-		} else { // Message
-			sendMessageToServer(msg);
+			String objectString = locationData.substring(locationData.indexOf("{PLD=") + 5,
+					locationData.lastIndexOf("}"));
+			PongLocationData pLD = null;
+			try {
+				pLD = (PongLocationData) ObjectStringCoder.stringToObject(objectString);
+			} catch (ClassNotFoundException | IOException e) {
+				e.printStackTrace();
+			}
+			pongFrame.getClientLiveGamePanel().getSpielfeld().updateLocations(pLD);
 		}
 	}
 
-	public String getUserName() {
-		return userName;
-	}
-
-	public void setUserName(String userName) {
-		this.userName = userName;
-	}
-
-	public ServerAttributes getConnectedServer() {
-		return connectedServer;
-	}
-
-	public void setConnect_Server(ServerAttributes connectedServer) {
-		this.connectedServer = connectedServer;
-	}
-
-	public class MessagesFromServerListener implements Runnable {
+	public class MessagesFromServerListenerTCP_IP implements Runnable {
 
 		@Override
 		public void run() {
@@ -219,7 +365,7 @@ public class ClientMainThread {
 										pongFrame.getMultiPlayer().getJoinServerPanel().CLIENT_ACCEPTED);
 							}
 						} else if (message.contains(GAME_START)) {
-
+							System.out.println("Client>>Received message Game-start");
 							if (message.contains(SPECTATOR_MODE)) {
 								pongFrame.showPane(pongFrame.CLIENT_LIVE_GAME_PANEL);
 								pongFrame.getClientLiveGamePanel().getSpielfeld()
@@ -234,13 +380,113 @@ public class ClientMainThread {
 										.configSF(pongFrame.getClientLiveGamePanel().getSpielfeld().PLAYER_RIGHT);
 							}
 						} else if (message.contains(IN_GAME_POSITIONS)) {
+							if (message.contains(GAME_COUNTDOWN_DATA)) {
+//								System.out.println("Client>>Received message countdown-time");
+//								showCountdown(message.substring(message.indexOf("{")));
+							} else {
+//								System.out.println("Client>>Received message ingame-positions");
 
-							safeInGameLocations(message.substring(message.indexOf("{")));
-
+//								safeInGameLocations(message.substring(message.indexOf("{")));
+							}
 						} else if (message.contains(GAME_STOP)) {
-							pongFrame.getClientLiveGamePanel().getSpielfeld().stopInGameSliderControl();
-							pongFrame.showPane(pongFrame.CLIENT_CONTROL_PANEL);
+							String resultMessage = message.substring(message.indexOf("{") + 1,
+									message.lastIndexOf("}"));
+							pongFrame.getClientLiveGamePanel().getSpielfeld().stopGameAndShowResult(resultMessage);
+//							pongFrame.showPane(pongFrame.CLIENT_CONTROL_PANEL);
+						} else if (message.contains(GAME_REQUEST_DATA)) {
+
+							String msg = message.substring(message.indexOf("{"));
+
+							String objectString = msg.substring(msg.indexOf("{GRD=") + "{GRD=".length() + 1,
+									msg.lastIndexOf("}"));
+
+							System.out.println("REQUEST: NORMAL:\"" + message + "\" Modified:\"" + msg
+									+ "\" objectString:\"" + objectString + "\"");
+							GameRequestData gRD = null;
+							try {
+								gRD = (GameRequestData) ObjectStringCoder.stringToObject(objectString);
+							} catch (ClassNotFoundException | IOException e) {
+								e.printStackTrace();
+							}
+							/*
+							 * TODO: Dieses GameRequestData-Objekt muss irgendwie in einer liste gespeichert
+							 * werden, sodass es wieder zurückgesendet werden kann. Wichtig dabei ist, dass
+							 * es irgendwie mit dem Request-Eintrag im ClientControlpanel in verbindugn
+							 * steht
+							 * 
+							 */
+							String leftPlayerName = gRD.getPlayerLeftName(), rightPlayerName = gRD.getPlayerRightName();
+
+							if (leftPlayerName.equals(getUserName())) {
+								pongFrame.getClientLiveGamePanel().getSpielfeld()
+										.configSF(pongFrame.getClientLiveGamePanel().getSpielfeld().PLAYER_LEFT);
+
+							} else if (rightPlayerName.equals(getUserName())) {
+								pongFrame.getClientLiveGamePanel().getSpielfeld()
+										.configSF(pongFrame.getClientLiveGamePanel().getSpielfeld().PLAYER_RIGHT);
+							}
+
+							pongFrame.getClientControlPanel().processGameRequestFromServer(gRD);
+
 						}
+//						else if (message.contains(GAME_REQUEST_SERVER_TO_CLIENT)) {// REQUEST FROM SERVER
+//							// Chat-Nachricht-Info anzeigen, in der request-liste des client-control-panels
+//							// anzeigen
+//							String leftPlayerName = null, rightPlayerName = null;
+//
+//							String msg = message.substring(message.indexOf(GAME_REQUEST_SERVER_TO_CLIENT)
+//									+ GAME_REQUEST_SERVER_TO_CLIENT.length());
+//							
+//							
+//							
+////							String objectString = msg.substring(msg.indexOf("{PLD=") + 5,
+////									msg.lastIndexOf("}"));
+//
+////							pongFrame.getClientLiveGamePanel().getSpielfeld().updateLocations(pLD);
+//							
+//							
+//							//msg-example: "{NAME_LEFT=Anonymous}{NAME_RIGHT=Anonymous1}"
+////							System.out.println("-------------------------------");
+////							System.out.println(getClass().getName()+": Request vom Server erkannt!");
+//							
+////							System.out.println("MESSAGE: {"+message+"} MSG: {"+msg+"}");
+//							
+//							// Namen aus der Nachricht fischen
+//							// TODO: Vielleicht noch nicht die richtigen Positionen
+//							int index = msg.indexOf("{NAME_LEFT=") + "{NAME_LEFT=".length();
+//							int index2 = msg.indexOf("}{");
+//							int index3 = msg.indexOf("{NAME_RIGHT=") + "{NAME_RIGHT=".length();
+//							int index4 = msg.lastIndexOf("}");
+//
+////							System.out.println("index1: "+index+" index2: "+index2+" index3: "+index3+" index4: "+index4);
+//							
+//							leftPlayerName = msg.substring(index, index2);
+//							rightPlayerName = msg.substring(index3, index4);
+//							
+//							if(leftPlayerName.equals(getUserName())) {
+//								pongFrame.getClientLiveGamePanel().getSpielfeld()
+//								.configSF(pongFrame.getClientLiveGamePanel().getSpielfeld().PLAYER_LEFT);
+//								
+//							}else if(rightPlayerName.equals(getUserName())) {
+//								pongFrame.getClientLiveGamePanel().getSpielfeld()
+//								.configSF(pongFrame.getClientLiveGamePanel().getSpielfeld().PLAYER_RIGHT);
+//								
+//							}
+//							
+////							leftPlayerName = "Spieler1";
+////							rightPlayerName = "Spieler2";
+//
+////							System.out.println("leftName: "+leftPlayerName+" rightName: "+rightPlayerName);
+////							System.out.println("-------------------------------");
+//							pongFrame.getClientControlPanel().processGameRequestFromServer(leftPlayerName,
+//									rightPlayerName);
+//
+//						} 
+//						else if (message.contains(GAME_REQUEST_REPLY_SERVER_TO_CLIENT)) { // ANSWER FROM SERVER TO
+//																							// REQUEST FROM THIS CLIENT
+//							
+//							
+//						}
 					} else {
 						appendTextMessages(message, pongFrame.getClientChat().LEVEL_INFO);
 					}
@@ -250,9 +496,22 @@ public class ClientMainThread {
 						pongFrame.getClientChat().LEVEL_ERROR);
 				e.printStackTrace();
 
-				System.out.println("Da gabs wohl son error, würd ich sagen");
-				connectToServer();
+//				System.out.println("Da gabs wohl son error, würd ich sagen");
+//				connectToServer();
 			}
+		}
+
+		private void showCountdown(String countdownData) {
+			String objectString = countdownData.substring(countdownData.indexOf("{GCD=") + 5,
+					countdownData.lastIndexOf("}"));
+			GameCountdownData gCD = null;
+			try {
+				gCD = (GameCountdownData) ObjectStringCoder.stringToObject(objectString);
+			} catch (ClassNotFoundException | IOException e) {
+				e.printStackTrace();
+			}
+			pongFrame.getClientLiveGamePanel().getSpielfeld().updateCountdown(gCD);
+
 		}
 
 		private void safeInGameLocations(String locationData) {
@@ -268,6 +527,27 @@ public class ClientMainThread {
 			pongFrame.getClientLiveGamePanel().getSpielfeld().updateLocations(pLD);
 		}
 	}
+
+	public void sendMultiPlayerPositionsToServer(PongSliderData sliderData) {
+//		System.out.println("Client--> send Multiplayer positions");
+		String objectString = null;
+		try {
+			objectString = ObjectStringCoder.objectToString(sliderData);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		String message = NO_CHAT_MESSAGE + IN_GAME_POSITIONS + "{PSD=" + objectString + "}";
+
+		sendPacketUDP(connectedServer.getIP(), message);
+//		sendMessageToServerUsingTCP_IP(message);
+	}
+
+//	public void sendMultiPlayerPositionsToServerTCP_IP(String message) {
+//
+//		
+//		sendMessageToServerUsingTCP_IP(message); //TODO: UDP
+//	}
 
 	private class ServerSearcherThread implements Runnable {
 
@@ -286,9 +566,9 @@ public class ClientMainThread {
 
 						// Open a random port to send the package
 
-						c = new DatagramSocket();
+						searchSocket = new DatagramSocket();
 
-						c.setBroadcast(true);
+						searchSocket.setBroadcast(true);
 
 						byte[] sendData = "DISCOVER_FUIFSERVER_REQUEST".getBytes();
 
@@ -299,7 +579,7 @@ public class ClientMainThread {
 							DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length,
 									InetAddress.getByName("255.255.255.255"), 8888);
 
-							c.send(sendPacket);
+							searchSocket.send(sendPacket);
 							if (pongFrame.isShowClientNetworkInformation())
 								appendTextMessages(
 										getUserName() + ">>> Request packet sent to: 255.255.255.255 (DEFAULT)",
@@ -340,7 +620,7 @@ public class ClientMainThread {
 									DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, broadcast,
 											8888);
 
-									c.send(sendPacket);
+									searchSocket.send(sendPacket);
 
 								} catch (Exception e) {
 								}
@@ -363,7 +643,7 @@ public class ClientMainThread {
 
 						int timeout_waiting_response = 1000; // ms
 						serverList.clear();
-						c.setSoTimeout(timeout_waiting_response);
+						searchSocket.setSoTimeout(timeout_waiting_response);
 						long nowtime = System.currentTimeMillis(); // Timestamp from now in MS
 
 						while ((System.currentTimeMillis() - nowtime) < timeout_waiting_response - 100) {
@@ -372,7 +652,7 @@ public class ClientMainThread {
 							byte[] recvBuf = new byte[15000];
 							DatagramPacket receivePacket = new DatagramPacket(recvBuf, recvBuf.length);
 
-							c.receive(receivePacket);
+							searchSocket.receive(receivePacket);
 
 							// We have a response
 							String IP = receivePacket.getAddress().getHostAddress();
@@ -438,7 +718,7 @@ public class ClientMainThread {
 							pongFrame.getMultiPlayer().getJoinServerPanel().setServerList(serverList);
 						} // ENDE-SCHLEIFE
 
-						c.close();
+						searchSocket.close();
 
 					} catch (SocketTimeoutException e) {
 

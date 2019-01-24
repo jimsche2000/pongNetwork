@@ -32,9 +32,12 @@ public class MenuSlider extends JSlider{
         
         Hashtable<Integer,JLabel> labels = new Hashtable<Integer,JLabel>( );
         int percent = 0;
+        float fontSize = 8*frame.getASPECT_RATIO();
+        if(fontSize < 8)fontSize = 8;
         for(int i = 0; i < 5; i++) {
         	JLabel l = new JLabel(Integer.toString(percent)+"%");
-        	l.setFont(frame.getGLOBAL_FONT().deriveFont(8*frame.getASPECT_RATIO()));
+        	
+        	l.setFont(frame.getGLOBAL_FONT().deriveFont(fontSize));
         	l.setBackground(new Color(255,255,255, 160));
         	l.setOpaque(true);
         	labels.put(new Integer(percent), l);

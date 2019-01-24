@@ -26,26 +26,39 @@ public class MenuButton extends JButton {
 	private Dimension size = new Dimension(800, 100);
 	private Dimension backgroundSize = new Dimension(800, 100);
 	private Color hoverBackgroundColor;
-	private Color pressedBackgroundColor;
+	private Color pressedBackgroundColor, invertedPressedBackGroundColor;
+	private Color invertedBackGroundColor;
+	private Color foreGroundColor, invertedForeGroundColor;
+	private Color pressedForeGroundColor, pressedInvertedForeGroundColor;
 	private String text;
-	private boolean autoResizeFont = false, firstTime = true;
+	private ImageIcon icon;
+	private ImageIcon invertedIcon;
+	private boolean autoResizeFont = false, firstTime = true, invertColors = false;
 
 	public MenuButton(PongFrame pongFrame, String text) {
 		this.text = text;
 		this.setText(text);
 		this.setSize(size);
 		this.setRolloverEnabled(true);
-		this.setForeground(Color.white);
-		this.setFocusPainted(false);
+		this.foreGroundColor = Color.white;
+		this.invertedForeGroundColor = Color.white;
+		this.pressedForeGroundColor = Color.black;
+		this.pressedInvertedForeGroundColor = Color.black;
+		
+//		this.setFocusPainted(false);
 		this.setBackground(Color.black);
-
+		this.invertedBackGroundColor = Color.white;
+		
 		setHoverBackgroundColor(Color.gray);
 		setPressedBackgroundColor(Color.white);
+		this.invertedPressedBackGroundColor = Color.black;
 
 		this.setFont(pongFrame.getGLOBAL_FONT().deriveFont(1, getWidth() * getHeight() / 3000 + 10));
 		this.setAutoFontSize(true);
 	}
-
+	public void setInvertColors(boolean invertColors) {
+		this.invertColors = invertColors;
+	}
 	public void setText(String text) {
 		this.text = text;
 	}
@@ -85,37 +98,83 @@ public class MenuButton extends JButton {
 	public void setAutoFontSize(boolean autoFontSize) {
 		autoResizeFont = autoFontSize;
 	}
+	public void setIcon(ImageIcon icon) {
+		this.icon = icon;
+	}
+	public void setInvertedIcon(ImageIcon invertedIcon) {
+		this.invertedIcon = invertedIcon;
+	}
 
-	@Override
-	protected void paintComponent(Graphics g) {
+//	public void paint(Graphics g) {
+//		
+//	}
+//	@Override
+	public void paint(Graphics g) {
 
 		Graphics2D g2d = (Graphics2D) g;
 		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		if (getModel().isPressed() || !isEnabled()) {
-			g.setColor(pressedBackgroundColor);
+			if(!invertColors) g.setColor(pressedBackgroundColor);
+			else g.setColor(invertedPressedBackGroundColor);
 		} else if (getModel().isRollover()) {
 			g.setColor(hoverBackgroundColor);
 		} else {
-			g.setColor(getBackground());
+			if(!invertColors)g.setColor(getBackground());
+			else g.setColor(invertedBackGroundColor);
 		}
 
 		g.fillRect(0, 0, backgroundSize.width, backgroundSize.height);
-		g.setColor(getContrastColor(g.getColor()));
+//		if(!invertColors || !model.isPressed())g.setColor(getForeground());
+//		else if(model.isPressed())g.setColor(Color.black);
+		
+		if(!invertColors) {
+			if(getModel().isPressed() || !isEnabled() ||getModel().isRollover()) {
+				g.setColor(pressedForeGroundColor);
+			}else {
+				g.setColor(foreGroundColor);
+			}
+		}else {
+			if(getModel().isPressed() || !isEnabled()||getModel().isRollover()) {
+				g.setColor(invertedForeGroundColor);
+			}else {
+				g.setColor(pressedInvertedForeGroundColor);
+			}
+		}
 
 //		somethingHasChanged = !oldSize.equals(this.getSize());
-		Font tempFont = this.getFont();
-		if (autoResizeFont && (firstTime)) {
-			firstTime = false;
-			MenuButton temp = this;
-			temp.setSize(backgroundSize);
-			temp.setBorder(new EmptyBorder(5, 5, 5, 5));
-			float size = getMaxFontSizeForControl(temp, text, g, this.getFont());
-			tempFont = tempFont.deriveFont(size - 2);
-			this.setFont(tempFont);
-
+		if(icon != null) {
+			if(invertedIcon != null) {
+				if(invertColors) {
+					if(getModel().isPressed() || !isEnabled()||getModel().isRollover()) {
+						g.drawImage(invertedIcon.getImage(), 0, 0, getPreferredSize().width, getPreferredSize().height, this);
+					}else {
+						g.drawImage(icon.getImage(), 0, 0, getPreferredSize().width, getPreferredSize().height, this);
+					}
+				}else {
+					if(getModel().isRollover() || getModel().isPressed()){
+						g.drawImage(icon.getImage(), 0, 0, getPreferredSize().width, getPreferredSize().height, this);
+						
+					}else {
+						g.drawImage(invertedIcon.getImage(), 0, 0, getPreferredSize().width, getPreferredSize().height, this);
+					}
+				}
+			}else {
+				g.drawImage(icon.getImage(), 0, 0, getPreferredSize().width, getPreferredSize().height, this);
+			}
+		}else {
+			Font tempFont = this.getFont();
+			if (autoResizeFont && (firstTime)) {
+				firstTime = false;
+				MenuButton temp = this;
+				temp.setSize(backgroundSize);
+				temp.setBorder(new EmptyBorder(5, 5, 5, 5));
+				float size = getMaxFontSizeForControl(temp, text, g, this.getFont());
+				tempFont = tempFont.deriveFont(size - 2);
+				this.setFont(tempFont);
+			}
+			drawCenteredString(g, text.toUpperCase(), new Rectangle(0, 0, backgroundSize.width, backgroundSize.height),
+					tempFont);
 		}
-		drawCenteredString(g, text.toUpperCase(), new Rectangle(0, 0, backgroundSize.width, backgroundSize.height),
-				tempFont);
 	}
 
 	private Color getContrastColor(Color color) {

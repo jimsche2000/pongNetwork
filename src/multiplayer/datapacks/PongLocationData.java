@@ -1,4 +1,4 @@
-package game;
+package multiplayer.datapacks;
 
 import java.awt.Point;
 import java.io.Serializable;
@@ -8,14 +8,24 @@ public class PongLocationData implements Serializable {
 	 * 
 	 */
 	private static final long serialVersionUID = 8289523661297350083L;
-	Point sliderLeft, sliderRight, ball;
-	String score;
+	private Point sliderLeft, sliderRight, ball;
+	private String score;
+	private int GAME_ID;
 
 	public PongLocationData(Point sliderLeft, Point sliderRight, Point ball) {
 		this.sliderLeft = sliderLeft;
 		this.sliderRight = sliderRight;
 		this.ball = ball;
 		this.score = "0 : 0";
+		GAME_ID = -1;
+	}
+
+	public int getGAME_ID() {
+		return GAME_ID;
+	}
+
+	public void setGAME_ID(int gAME_ID) {
+		GAME_ID = gAME_ID;
 	}
 
 	public String getScore() {

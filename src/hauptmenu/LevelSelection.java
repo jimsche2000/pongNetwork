@@ -569,7 +569,6 @@ public class LevelSelection extends JPanel implements ActionListener {
 				} else {
 					rightName.setText("Spieler 2");
 				}
-
 			} else {
 				leftName.setEditable(true);
 				rightName.setEditable(false);
@@ -665,7 +664,7 @@ public class LevelSelection extends JPanel implements ActionListener {
 			erfBereichRechterBot = (int) (1920 - ((erfassungsbereichBotRechtsSlider.getValue() / 100.) * 1920)); // Von
 																													// rechts
 																													// gesehen
-System.out.println("erfL: "+erfBereichLinkerBot+" erfR: "+erfBereichRechterBot);
+			System.out.println("erfL: "+erfBereichLinkerBot+" erfR: "+erfBereichRechterBot);
 			pongFrame.getSinglePlayer().setNameLabel(leftName.getText(), rightName.getText());
 			pongFrame.getSinglePlayer().restartGame(isLeftPlayerBot, isRightPlayerBot, playerLeftSpeed,
 					playerRightSpeed, ballSpeed, botSpeed, botFailFactor, erfBereichLinkerBot, erfBereichRechterBot);

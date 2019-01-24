@@ -9,3 +9,57 @@ General TODO:
 
 -Eine config-Datei erstellen, und beim start ladem bzw importieren. Wenn keine vorhanden ist standard werte nehmen, und eine config erstellen.
 -Wenn Auflösungen o.ä. geändert werden, in die config speichern, fenster disposen, in neuem thread die jar wieder starten(holt sich direkt die neue config), und das alte programm per System.exit(0); beenden
+
+
+
+
+
+
+
+
+----------------------------------------
+TODO Server-Control-Panel(Multiplayer):
+	-Server-Control-Panel auflösungsunabhängig, mit MenuButtons, MenuLabels etc. 
+	-Server-Control-Panel überarbeiten in Hinsicht auf die User-Liste!
+
+//Um folgende Punkte zu erreichen, ist es nötig, dass der Server mehrere Gamethreads gleiochzeitig verhalten kann!
+	-Neue Game-Liste auf dem Server-Control-Panel hinzufügen!
+	-Neuen Button "Neues Spiel" hinzufügen (Dialog mit auswahl aller verfügbaren Spieler, auswahl ob linker oder rechter Spieler) ->
+	-> Client-Control-Panel braucht auch eine Liste der aktuellen Spiele und User, sowie die Möglichkeit ein Spiel zu spectaten,
+	und ein Spiel mit auswählbarem verfügbarem gegner anzufragen. Dementsprechend braucht das Server-Control-Panel auch noch ein Anfrage-Panel
+
+//	-Neuen Button "Neues Turnier" hinzufügen
+
+Funktionen der neuen User-Liste:
+	-kicken(auch auf zeit)
+	-muten(auch auf zeit)
+	-
+
+Funktionen der neuen Game-Liste:
+	-Aktuelle Spiele anzeigen, sowie Ergebnis sowie Mitspielr der fertigen Spiele anzeigen(auch anzeigen ob abgebrochen und von wem)
+	-
+
+Sonstige Änderung:
+
+	Wenn der Server ein Spiel erstellt, werden Anfragen zu den betroffenen Spielern geschickt, ob sie auch wirklich spielen wollen
+	(Nicht als Dialog, sondern als Panel?; 30sek. Wartezeit! Danach Spiel abgebrochen!), wenn der Spieler auf akzeptieren klickt,
+	soll auf das Live-Game-Panel umgeschaltet werden, es soll dort angezeigt werden, ob der andere Spieler auch akzeptiert hat,
+	und sobald dies passiert ist, ein 3Sekunden Countdown, bis das Spiel beginnt
+	
+	
+	
+	Notizen Server-Control-Panel:
+			Spieler-Liste:
+				playername(220, 20)
+				ipAdrr(132, 20)
+				muteplayer(50, 20)
+				kickPlayer(50,20)
+				banplayer(50, 20)
+				
+				
+aktueller stand Multiplayer neuerungen:
+	ClientControlPanel braucht noch das anfrage panel vom server.(Wenn der server-admin auf spiel erstellen klickt, soll eine anfrage an beide spieler geschickt werden)
+	Wenn der client die anfrage akzeptiert, soll dort auf clientlivegamepanel umgeschaltet werden, und eine nachricht zum server geschickt werden -> wenn beide akzeptiert haben, soll der spielthread gestartet werden (Methode configureGameForClients im Server-MainThread)
+	UDP-Übertragung fehlt noch für live-game-koordinaten
+	mölglichkeit für spectator fehlt noch
+				

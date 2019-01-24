@@ -5,19 +5,21 @@ import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.Graphics;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.awt.Image;
 import java.awt.Insets;
+import java.awt.KeyEventDispatcher;
+import java.awt.KeyboardFocusManager;
 import java.awt.Point;
 import java.awt.Toolkit;
-
+import java.awt.event.KeyEvent;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 
 import game.SinglePlayer;
 import gui.AlphaContainer;
@@ -48,8 +50,8 @@ public class PongFrame extends JFrame {
 	private Credits credits;
 	private MultiPlayer multiPlayer;
 	private SinglePlayer singleplayer; // Offline/SinglePlayer
-	private Point MOUSE_LOCATION = new Point(500, 500);
-	private Image cursorImage = ImageLoader.loadImage("edit_icon2.png", 50, 50);// giphy.gif
+//	private Point MOUSE_LOCATION = new Point(500, 500);
+	private Image cursorImage = ImageLoader.loadImage("edit_icon3.png", 50, 50);// giphy.gif
 	private Image frameIcon = ImageLoader.loadImage("PongIcon.png", 64, 64);
 	private FontLoader flo;
 	private ServerMainThread hostServer;
@@ -77,10 +79,13 @@ public class PongFrame extends JFrame {
 	public final int LEVEL_SELECTION = 11;
 	public final int TITLE_HEIGHT = 50;
 
+//    private BufferedImage cursorImage;
+//    private Toolkit kit;
+
 	public PongFrame() {
 		super("Pong Projekt 2018 - EAIT6");
 		JOptionPane pane = new JOptionPane("Das Spiel lädt...", JOptionPane.INFORMATION_MESSAGE);
-		JDialog dialog = pane.createDialog(null, "Pong-Network-2018");
+		JDialog dialog = pane.createDialog(null, "Pong-Network-2019");
 		dialog.setModal(false);
 		dialog.setVisible(true);
 		/*
@@ -94,9 +99,10 @@ public class PongFrame extends JFrame {
 		flo = new FontLoader();
 		GLOBAL_FONT = flo.loadFont("PressStart2P");
 
-//		Dimension fullScreenSize = new Dimension(1920, 1080); //for testing on different resolutions
+		Dimension fullScreenSize = new Dimension(1920, 1080); // for testing on different resolutions
 //		Dimension fullScreenSize = new Dimension(1680, 1050); // for testing on different resolutions
-		Dimension fullScreenSize = Toolkit.getDefaultToolkit().getScreenSize();
+//		Dimension fullScreenSize = new Dimension(1366, 768); // for testing on different resolutions
+//		Dimension fullScreenSize = Toolkit.getDefaultToolkit().getScreenSize();
 
 		windowResolution = fullScreenSize;
 		float[] screenSize = { (float) fullScreenSize.getWidth(), (float) fullScreenSize.getHeight() };
@@ -109,11 +115,21 @@ public class PongFrame extends JFrame {
 		graphicInsets = setInsets(fullScreenSize, graphicResolution);
 
 		clientChat = new ClientChat(this);
-		
+
 		setLayout(new BorderLayout());
 		setSize(fullScreenSize);
 
 		componentPanel = new JPanel();
+//		{
+//			
+//			public void paint(Graphics g) {
+//				super.paint(g);
+////				super.paintComponents(g);
+//				System.out.println("REPAINTING CURSOR: "+cursorImage+" POS: "+MOUSE_LOCATION);
+//				g.drawImage(cursorImage, MOUSE_LOCATION.x, MOUSE_LOCATION.y, null);
+//				repaint();
+//			}
+//		};
 		componentPanel.setLayout(cl);
 		componentPanel.setAlignmentY(SwingConstants.CENTER);
 		componentPanel.setPreferredSize(graphicResolution);
@@ -169,19 +185,60 @@ public class PongFrame extends JFrame {
 
 		this.add(componentPanel, BorderLayout.CENTER);
 		cl.show(componentPanel, "mainMenu");
+//		cl.show(componentPanel, "clientLiveGamePanel");
 		ACTIVE_PANEL = this.MAIN_MENU;
 
 		setCursor(Toolkit.getDefaultToolkit().createCustomCursor(cursorImage, new Point(this.getX(), this.getY()),
 				"cursor"));
+//		setCursor(null);
+		// unsichtbarkeit des courses
+//		int[] pixels = new int[16 * 16];
+//		Image image = Toolkit.getDefaultToolkit().createImage(new MemoryImageSource(16, 16, pixels, 0, 16));
+//		Cursor transparentCursor = Toolkit.getDefaultToolkit().createCustomCursor(image, new Point(0, 0),
+//				"invisibleCursor");
+//		this.setCursor(transparentCursor);
+
+//        try {
+//            kit = Toolkit.getDefaultToolkit();
+//            cursorImage = ImageLoader.loadBufferedImage("edit_icon3.png");
+//            for (int i = 0; i < cursorImage.getHeight(); i++) {
+//                int[] rgb = cursorImage.getRGB(0, i, cursorImage.getWidth(), 1, null, 0, cursorImage.getWidth() * 4);
+//                for (int j = 0; j < rgb.length; j++) {
+//                    int alpha = (rgb[j] >> 24) & 255;
+//                    if (alpha < 128) {
+//                        alpha = 0;
+//                    } else {
+//                        alpha = 255;
+//                    }
+//                    rgb[j] &= 0x00ffffff;
+//                    rgb[j] = (alpha << 24) | rgb[j];
+//                }
+//                cursorImage.setRGB(0, i, cursorImage.getWidth(), 1, rgb, 0,
+//                        cursorImage.getWidth() * 4);
+//            }
+//            Cursor cursor = kit.createCustomCursor(
+//                    cursorImage, new Point(0, 0), "CustomCursor");
+//
+//            setCursor(cursor);
+//
+//        } catch (Exception exp) {
+//            exp.printStackTrace();
+//        }
+
 		setBackground(Color.black);
 		setIconImage(frameIcon);
 		setLocationRelativeTo(null);
+
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setUndecorated(true);
 		setResizable(false);
 		setVisible(true);
 //		showOnScreen(1, this);
 		dialog.setVisible(false);
+
+		KeyboardFocusManager manager = KeyboardFocusManager.getCurrentKeyboardFocusManager();
+		manager.addKeyEventDispatcher(new MyDispatcher());
+
 	}
 
 	private Insets setInsets(Dimension fullScreenSize, Dimension graphicResolution) {
@@ -200,66 +257,80 @@ public class PongFrame extends JFrame {
 		return new Insets(top, left, bottom, right);
 	}
 
-	public void paintComponent(Graphics g) {
-		g.drawImage(cursorImage, MOUSE_LOCATION.x, MOUSE_LOCATION.y - cursorImage.getHeight(null), null);
-
-	}
+//	public void paintComponent(Graphics g) {
+//		super.paintComponents(g);
+//		g.drawImage(cursorImage, MOUSE_LOCATION.x, MOUSE_LOCATION.y - cursorImage.getHeight(null), null);
+//
+////		System.out.println("Frame double Buffered? "+isDoubleBuffered());
+//	}
 
 	boolean firstTime = true;
-	public void showPane(int ID) {
 
-		switch (ID) {
-		case SERVER_CONTROL_PANEL:
-			ACTIVE_PANEL = this.SERVER_CONTROL_PANEL;
-			updateUserListOnServer = true;
-			serverControlPanel.reload();
-			cl.show(componentPanel, "serverControlPanel");
-			break;
-		case SERVER_LIVE_GAME_PANEL:
-			ACTIVE_PANEL = this.SERVER_LIVE_GAME_PANEL;
-			setConsoleToPanel(SERVER_LIVE_GAME_PANEL);
-			cl.show(componentPanel, "serverLiveGamePanel");
-			break;
-		case CLIENT_CONTROL_PANEL:
-			ACTIVE_PANEL = this.CLIENT_CONTROL_PANEL;
-			cl.show(componentPanel, "clientControlPanel");
-			break;
-		case CLIENT_LIVE_GAME_PANEL:
-			ACTIVE_PANEL = this.CLIENT_LIVE_GAME_PANEL;
-			cl.show(componentPanel, "clientLiveGamePanel");
-			break;
-		case MAIN_MENU:
-			ACTIVE_PANEL = this.MAIN_MENU;
-			cl.show(componentPanel, "mainMenu");
-			break;
-		case LEVEL_SELECTION:
-			ACTIVE_PANEL = this.LEVEL_SELECTION;
-			cl.show(componentPanel, "levelSelection");
-			break;
-		case CREDITS:
-			ACTIVE_PANEL = this.CREDITS;
-			cl.show(componentPanel, "credits");
-			break;
-		case MULTI_PLAYER:
-			ACTIVE_PANEL = this.MULTI_PLAYER;
-			cl.show(componentPanel, "multiPlayer");
-			if (multiPlayer.isJoinServerPanelActive()) {
-				if (firstTime) {
-					clientThread = new ClientMainThread(this);
-					clientThread.startSearchForServer();
-					firstTime = false;
-				} else {
-					getClientThread().setShouldSearchForServer(true);
+	public void showPane(int ID) {
+		PongFrame frame = this;
+		SwingUtilities.invokeLater(new Runnable() {
+			
+			@Override
+			public void run() {		
+				switch (ID) {
+			case SERVER_CONTROL_PANEL:
+				ACTIVE_PANEL = SERVER_CONTROL_PANEL;
+				updateUserListOnServer = true;
+				serverControlPanel.reload();
+				cl.show(componentPanel, "serverControlPanel");
+				break;
+			case SERVER_LIVE_GAME_PANEL:
+				ACTIVE_PANEL = SERVER_LIVE_GAME_PANEL;
+				setConsoleToPanel(SERVER_LIVE_GAME_PANEL);
+				cl.show(componentPanel, "serverLiveGamePanel");
+				break;
+			case CLIENT_CONTROL_PANEL:
+				ACTIVE_PANEL = CLIENT_CONTROL_PANEL;
+				cl.show(componentPanel, "clientControlPanel");
+				break;
+			case CLIENT_LIVE_GAME_PANEL:
+				ACTIVE_PANEL = CLIENT_LIVE_GAME_PANEL;
+				cl.show(componentPanel, "clientLiveGamePanel");
+//				clientLiveGamePanel.repaint();
+				clientLiveGamePanel.wakeUp();
+				break;
+			case MAIN_MENU:
+				ACTIVE_PANEL = MAIN_MENU;
+				cl.show(componentPanel, "mainMenu");
+				break;
+			case LEVEL_SELECTION:
+				ACTIVE_PANEL = LEVEL_SELECTION;
+				cl.show(componentPanel, "levelSelection");
+				break;
+			case CREDITS:
+				ACTIVE_PANEL = CREDITS;
+				cl.show(componentPanel, "credits");
+				break;
+			case MULTI_PLAYER:
+				ACTIVE_PANEL = MULTI_PLAYER;
+				cl.show(componentPanel, "multiPlayer");
+				if (multiPlayer.isJoinServerPanelActive()) {
+					if (firstTime) {
+						clientThread = new ClientMainThread(frame);
+						clientThread.startSearchForServer();
+						firstTime = false;
+					} else {
+						getClientThread().setShouldSearchForServer(true);
+					}
 				}
+				break;
+			case SINGLEPLAYER:
+				ACTIVE_PANEL = SINGLEPLAYER;
+				cl.show(componentPanel, "singleplayer");
+				break;
+			default:
+				break;
 			}
-			break;
-		case SINGLEPLAYER:
-			ACTIVE_PANEL = this.SINGLEPLAYER;
-			cl.show(componentPanel, "singleplayer");
-			break;
-		default:
-			break;
-		}
+				
+			}
+		});
+		
+
 	}
 
 	private void setConsoleToPanel(int ID) {
@@ -319,6 +390,14 @@ public class PongFrame extends JFrame {
 	public void setGLOBAL_FONT(Font gLOBAL_FONT) {
 		GLOBAL_FONT = gLOBAL_FONT;
 	}
+
+//	public ServerControlPanel getServerControlPanel() {
+//		return serverControlPanel;
+//	}
+//
+//	public void setServerControlPanel(ServerControlPanel serverControlPanel) {
+//		this.serverControlPanel = serverControlPanel;
+//	}
 
 	public ClientLiveGamePanel getClientLiveGamePanel() {
 		return clientLiveGamePanel;
@@ -456,4 +535,37 @@ public class PongFrame extends JFrame {
 		this.graphicInsets = graphicInsets;
 	}
 
+	public ClientControlPanel getClientControlPanel() {
+		return clientControlPanel;
+	}
+
+	public void setClientControlPanel(ClientControlPanel clientControlPanel) {
+		this.clientControlPanel = clientControlPanel;
+	}
+
+	private class MyDispatcher implements KeyEventDispatcher {
+		@Override
+		public boolean dispatchKeyEvent(KeyEvent e) {
+
+			if (getACTIVE_PANEL() == CLIENT_LIVE_GAME_PANEL) {
+
+				if (e.getID() == KeyEvent.KEY_PRESSED) {
+					getClientLiveGamePanel().getSpielfeld().keyPressed(e);
+				} else if (e.getID() == KeyEvent.KEY_RELEASED) {
+					getClientLiveGamePanel().getSpielfeld().keyReleased(e);
+				} else if (e.getID() == KeyEvent.KEY_TYPED) {
+					getClientLiveGamePanel().getSpielfeld().keyTyped(e);
+				}
+			} else if (getACTIVE_PANEL() == SINGLEPLAYER) {
+				if (e.getID() == KeyEvent.KEY_PRESSED) {
+					getSinglePlayer().keyPressed(e);
+				} else if (e.getID() == KeyEvent.KEY_RELEASED) {
+					getSinglePlayer().keyReleased(e);
+				} else if (e.getID() == KeyEvent.KEY_TYPED) {
+					getSinglePlayer().keyTyped(e);
+				}
+			}
+			return false;
+		}
+	}
 }

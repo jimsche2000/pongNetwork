@@ -1,4 +1,4 @@
-package multiplayer.client;
+package multiplayer.datapacks;
 
 import java.io.PrintWriter;
 import java.io.Serializable;

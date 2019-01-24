@@ -22,9 +22,9 @@ public class ClientLiveGamePanel extends JPanel {
 
 	public ClientLiveGamePanel(PongFrame pongFrame) {
 		this.pongFrame = pongFrame;
-		this.setSize(pongFrame.getSize());
+		this.setSize(pongFrame.getGraphicResolution());
 		this.setLayout(null);
-		contentPane.setSize(pongFrame.getSize());
+		contentPane.setSize(pongFrame.getGraphicResolution());
 		contentPane.setLayout(null);
 
 		spielfeld = new MultiPlayerMatchField(pongFrame);
@@ -48,5 +48,9 @@ public class ClientLiveGamePanel extends JPanel {
 
 	public void setSpielfeld(MultiPlayerMatchField spielfeld) {
 		this.spielfeld = spielfeld;
+	}
+
+	public void wakeUp() {
+		spielfeld.laufen();
 	}
 }

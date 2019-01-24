@@ -17,17 +17,19 @@ import hauptmenu.PongFrame;
 
 // JPanel shown in the modal JDialog above
 @SuppressWarnings("serial")
-public class PausePanel extends JPanel implements ActionListener {
+public class PausePanelSinglePlayer extends JPanel implements ActionListener {
 	private static final Color BG = new Color(255, 255, 255);
 	private PongFrame frame;
 	private MenuButton resume, restart, back;
 	private MenuLabel pausedLabel;
 
-	public PausePanel(PongFrame frame) {
+	public PausePanelSinglePlayer(PongFrame frame) {
 		this.frame = frame;
+		int fourhundred = Math.round(400 * frame.getASPECT_RATIO());
+		int seventyFive = Math.round(75 * frame.getASPECT_RATIO());
 		pausedLabel = new MenuLabel(frame, "Spiel Pausiert");
 		pausedLabel.setAlignment(pausedLabel.ALIGN_MID);
-		pausedLabel.setSize(new Dimension(400, 75));
+		pausedLabel.setSize(new Dimension(fourhundred, seventyFive));
 		JPanel pausedPanel = new JPanel();
 		pausedPanel.setOpaque(false);
 		pausedPanel.add(pausedLabel);
@@ -38,19 +40,19 @@ public class PausePanel extends JPanel implements ActionListener {
 
 		add(pausedPanel);
 		resume = new MenuButton(frame, "Fortfahren");
-		resume.setSize(new Dimension(400, 75));
+		resume.setSize(new Dimension(fourhundred, seventyFive));
 		resume.addActionListener(this);
 		restart = new MenuButton(frame, "Neustarten");
-		restart.setSize(new Dimension(400, 75));
+		restart.setSize(new Dimension(fourhundred, seventyFive));
 		restart.addActionListener(this);
 		back = new MenuButton(frame, "Hauptmenü");
-		back.setSize(new Dimension(400, 75));
+		back.setSize(new Dimension(fourhundred, seventyFive));
 		back.addActionListener(this);
 		add(resume);
 		add(restart);
 		add(back);
 
-		setPreferredSize(new Dimension(450, 365));
+		setPreferredSize(new Dimension(Math.round(450 * frame.getASPECT_RATIO()), Math.round(365 * frame.getASPECT_RATIO())));
 	}
 
 	@Override
@@ -71,7 +73,8 @@ public class PausePanel extends JPanel implements ActionListener {
 
 	// Disposes the JDialog, resumes to Game
 	public void resume() {
-		Window win = SwingUtilities.getWindowAncestor((Component) resume);
+//		Window win = SwingUtilities.getWindowAncestor((Component) resume);
+		Window win = SwingUtilities.getWindowAncestor((Component) this);
 		win.dispose(); // here -- dispose of the JDialog
 	}
 

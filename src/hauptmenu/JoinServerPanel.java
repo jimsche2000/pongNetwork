@@ -16,10 +16,11 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
+import gui.JTextFieldCharLimit;
 import gui.MenuButton;
 import gui.MenuLabel;
 import gui.MenuTextField;
-import multiplayer.server.ServerAttributes;
+import multiplayer.datapacks.ServerAttributes;
 
 public class JoinServerPanel extends JPanel implements ActionListener{
 
@@ -50,7 +51,7 @@ public class JoinServerPanel extends JPanel implements ActionListener{
 		contentPane = new JPanel();
 
 		namePanel = new JPanel();
-		namePanel.setPreferredSize(new Dimension(preferredSize.width, Math.round(110 * pongFrame.getASPECT_RATIO())));
+		namePanel.setPreferredSize(new Dimension(preferredSize.width, Math.round(125 * pongFrame.getASPECT_RATIO())));
 		namePanel.setOpaque(false);
 		
 		nameAlreadyTaken = new MenuLabel(pongFrame,
@@ -68,13 +69,15 @@ public class JoinServerPanel extends JPanel implements ActionListener{
 		nameLabel.setSize(new Dimension(Math.round(205 * pongFrame.getASPECT_RATIO()), Math.round(50 * pongFrame.getASPECT_RATIO())));
 		nameLabel.setFont(pongFrame.getGLOBAL_FONT().deriveFont(20f * pongFrame.getASPECT_RATIO()));
 		nameLabel.setDrawBackground(false);
+		nameLabel.setForeground(Color.white);
 		namePanel.add(nameLabel);
 
 		textField = new MenuTextField(pongFrame, "Anonymous");
 		textField.setFont(pongFrame.getGLOBAL_FONT().deriveFont(20f * pongFrame.getASPECT_RATIO()));
-		textField.setSize(new Dimension(Math.round(300 * pongFrame.getASPECT_RATIO()), Math.round(50 * pongFrame.getASPECT_RATIO())));
+		textField.setSize(new Dimension(Math.round(300 * pongFrame.getASPECT_RATIO()), Math.round(45 * pongFrame.getASPECT_RATIO())));
 		textField.setBorder(new EmptyBorder(0, 0, 0, 0));
-
+		textField.setForeground(Color.white);
+		textField.setDocument(new JTextFieldCharLimit(14));
 		textField.getDocument().addDocumentListener(new DocumentListener() {
 			public void changedUpdate(DocumentEvent e) {
 				clearNameAlreadyTakenLabel();
@@ -89,11 +92,12 @@ public class JoinServerPanel extends JPanel implements ActionListener{
 			}
 
 			public void clearNameAlreadyTakenLabel() {
-				String text = "Gebe dir einen Namen und joine auf den Server deiner Wahl - oder erstelle einen Eigenen.";
-				if (!nameAlreadyTaken.getText().equals(text))
+				String text = "Gebe dir einen Namen und joine auf den Server deiner Wahl";
+//				if (!nameAlreadyTaken.getText().equals(text))
 					nameAlreadyTaken.setText(text);
 			}
 		});
+		textField.setText("Anonymous");
 		namePanel.add(textField);
 		contentPane.add(namePanel);
 
@@ -101,7 +105,7 @@ public class JoinServerPanel extends JPanel implements ActionListener{
 		serverJoinButtons = new ArrayList<MenuButton>();
 
 		reloadPanel = new JPanel();
-		reloadPanel.setPreferredSize(new Dimension(preferredSize.width, Math.round(50 * pongFrame.getASPECT_RATIO())));
+		reloadPanel.setPreferredSize(new Dimension(preferredSize.width, Math.round(65 * pongFrame.getASPECT_RATIO())));
 		reloadButton = new MenuButton(pongFrame, "RELOAD");
 		reloadButton.setSize(new Dimension(Math.round(200 * pongFrame.getASPECT_RATIO()), Math.round(50 * pongFrame.getASPECT_RATIO())));
 		reloadButton.addActionListener(this);
@@ -142,7 +146,7 @@ public class JoinServerPanel extends JPanel implements ActionListener{
 		serverJoinTitle.setForeground(Color.white);
 		
 		serverListPanel = new JPanel();
-		serverListPanel.setPreferredSize(new Dimension(Math.round(1000 * pongFrame.getASPECT_RATIO()), Math.round(410 * pongFrame.getASPECT_RATIO())));
+		serverListPanel.setPreferredSize(new Dimension(Math.round(1000 * pongFrame.getASPECT_RATIO()), Math.round(375 * pongFrame.getASPECT_RATIO())));
 		serverListPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 1, 1));
 
 		serverListTitlePanel = new JPanel();
@@ -542,7 +546,7 @@ public class JoinServerPanel extends JPanel implements ActionListener{
 				int ID = serverJoinButtons.indexOf(tempJoinServerButton);
 
 				pongFrame.getClientThread().setUserName(textField.getText());
-				pongFrame.getClientThread().setConnect_Server(serverList.get(ID));
+				pongFrame.getClientThread().setConnectServer(serverList.get(ID));
 
 				if (pongFrame.getClientThread().connectToServer()) {
 					System.out.println(">>>VERBINDUNG MIT SERVER HERGESTELLT");

@@ -1,4 +1,4 @@
-package multiplayer.server;
+package multiplayer.datapacks;
 
 import java.io.Serializable;
 
